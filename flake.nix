@@ -18,7 +18,7 @@
       };
     };
     zls-src = {
-      url = "github:zigtools/zls/0.14.0";
+      url = "github:zigtools/zls/0.15.0";
       flake = false;
     };
 
@@ -48,10 +48,10 @@
       overlays = [
         (
           _final: prev: with prev; rec {
-            zig = inputs.zig.packages.${system}."0.14.0";
+            zig = inputs.zig.packages.${system}."0.15.1";
             zls = stdenvNoCC.mkDerivation {
-              name = "zls";
-              version = "${inputs.zigscient-src.shortRev}-${inputs.zigscient-src.lastModifiedDate}";
+              pname = "zls";
+              version = "${inputs.zls-src.shortRev}-${inputs.zls-src.lastModifiedDate}";
               meta.mainProgram = "zls";
               src = "${inputs.zls-src}";
               nativeBuildInputs = [ zig ];
@@ -115,7 +115,7 @@
           [
             zig
             zls
-            zigscient
+            # zigscient # Disabled because it does not work with Zig 0.15.1
             xmlstarlet
             coreutils
             bash
@@ -161,7 +161,7 @@
             shellHook = pkgs.lib.concatLines [
               baseShellHook
               ''
-                cd "$PROJECT_ROOT"
+                cd "$FLAKE_ROOT"
 
                 if [[ -d "$HOME/Library/Application Support/JetBrains" ]]; then
                   JETBRAINS_PATH="$HOME/Library/Application Support/JetBrains"
