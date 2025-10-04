@@ -29,8 +29,7 @@ pub fn main() !void {
     var slowest = SlowTracker.init(allocator, 5);
     defer slowest.deinit();
 
-    var buffer: [1024]u8 = undefined;
-    const stderr = std.debug.lockStderrWriter(&buffer);
+    const stderr = std.debug.lockStderrWriter(&.{});
     defer std.debug.unlockStderrWriter();
 
     var pass: usize = 0;
