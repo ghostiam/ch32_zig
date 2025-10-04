@@ -1,6 +1,7 @@
 .{
     .name = .svd,
     .version = "0.0.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .svd4zig = .{ .path = "../../tools/svd4zig" },
     },
