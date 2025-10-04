@@ -33,14 +33,14 @@ pub const Device = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var version = ArrayList(u8).init(allocator);
-        errdefer version.deinit();
-        var description = ArrayList(u8).init(allocator);
-        errdefer description.deinit();
-        var peripherals = Peripherals.init(allocator);
-        errdefer peripherals.deinit();
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var version: ArrayList(u8) = .empty;
+        errdefer version.deinit(allocator);
+        var description: ArrayList(u8) = .empty;
+        errdefer description.deinit(allocator);
+        var peripherals: Peripherals = .empty;
+        errdefer peripherals.deinit(allocator);
         var interrupts = Interrupts.init(allocator);
         errdefer interrupts.deinit();
 
@@ -61,15 +61,15 @@ pub const Device = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
-        self.name.deinit();
-        self.version.deinit();
-        self.description.deinit();
-        self.peripherals.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.name.deinit(allocator);
+        self.version.deinit(allocator);
+        self.description.deinit(allocator);
+        self.peripherals.deinit(allocator);
         self.interrupts.deinit();
     }
 
-    pub fn format(self: Self, comptime _: []const u8, _: std.fmt.FormatOptions, out_stream: anytype) !void {
+    pub fn format(self: Self, out_stream: *std.Io.Writer) std.Io.Writer.Error!void {
         const name = if (self.name.items.len == 0) "unknown" else self.name.items;
         const version = if (self.version.items.len == 0) "unknown" else self.version.items;
         const description = if (self.description.items.len == 0) "unknown" else self.description.items;
@@ -81,11 +81,11 @@ pub const Device = struct {
             \\
         , .{ name, version, description });
         if (self.cpu) |the_cpu| {
-            try out_stream.print("{}\n", .{the_cpu});
+            try out_stream.print("{f}\n", .{the_cpu});
         }
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        const padded_out_stream = padded_writer.writer();
+        const padded_out_stream = &padded_writer.writer;
 
         try out_stream.writeAll(
             \\
@@ -158,11 +158,11 @@ pub const Device = struct {
         try out_stream.writeAll("};\n");
 
         // now print interrupt table
-        var interrupts_values = ArrayList(u32).init(self.allocator);
-        defer interrupts_values.deinit();
+        var interrupts_values: ArrayList(u32) = .empty;
+        defer interrupts_values.deinit(self.allocator);
         var key_iter = self.interrupts.keyIterator();
         while (key_iter.next()) |key| {
-            try interrupts_values.append(key.*);
+            interrupts_values.append(self.allocator, key.*) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         std.mem.sort(u32, interrupts_values.items, {}, std.sort.asc(u32));
@@ -214,12 +214,12 @@ pub const Cpu = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var revision = ArrayList(u8).init(allocator);
-        errdefer revision.deinit();
-        var endian = ArrayList(u8).init(allocator);
-        errdefer endian.deinit();
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var revision: ArrayList(u8) = .empty;
+        errdefer revision.deinit(allocator);
+        var endian: ArrayList(u8) = .empty;
+        errdefer endian.deinit(allocator);
 
         return Self{
             .name = name,
@@ -232,13 +232,13 @@ pub const Cpu = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
-        self.name.deinit();
-        self.revision.deinit();
-        self.endian.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.name.deinit(allocator);
+        self.revision.deinit(allocator);
+        self.endian.deinit(allocator);
     }
 
-    pub fn format(self: Self, comptime _: []const u8, _: std.fmt.FormatOptions, out_stream: anytype) !void {
+    pub fn format(self: Self, out_stream: *std.Io.Writer) !void {
         try out_stream.writeAll("\n");
 
         const name = if (self.name.items.len == 0) "unknown" else self.name.items;
@@ -284,18 +284,18 @@ pub const Peripheral = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var group_name = ArrayList(u8).init(allocator);
-        errdefer group_name.deinit();
-        var description = ArrayList(u8).init(allocator);
-        errdefer description.deinit();
-        var derived_from = ArrayList(u8).init(allocator);
-        errdefer derived_from.deinit();
-        var derived_peripherals = Peripherals.init(allocator);
-        errdefer derived_peripherals.deinit();
-        var registers = Registers.init(allocator);
-        errdefer registers.deinit();
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var group_name: ArrayList(u8) = .empty;
+        errdefer group_name.deinit(allocator);
+        var description: ArrayList(u8) = .empty;
+        errdefer description.deinit(allocator);
+        var derived_from: ArrayList(u8) = .empty;
+        errdefer derived_from.deinit(allocator);
+        var derived_peripherals: Peripherals = .empty;
+        errdefer derived_peripherals.deinit(allocator);
+        var registers: Registers = .empty;
+        errdefer registers.deinit(allocator);
 
         return Self{
             .name = name,
@@ -311,13 +311,13 @@ pub const Peripheral = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
-        self.name.deinit();
-        self.group_name.deinit();
-        self.description.deinit();
-        self.derived_from.deinit();
-        self.derived_peripherals.deinit();
-        self.registers.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.name.deinit(allocator);
+        self.group_name.deinit(allocator);
+        self.description.deinit(allocator);
+        self.derived_from.deinit(allocator);
+        self.derived_peripherals.deinit(allocator);
+        self.registers.deinit(allocator);
     }
 
     pub fn isValid(self: Self) bool {
@@ -344,17 +344,17 @@ pub const Peripheral = struct {
         return false;
     }
 
-    fn writeOffsetRegister(num: usize, first_unused: u32, last_unused: u32, out_stream: anytype) !void {
+    fn writeOffsetRegister(num: usize, first_unused: u32, last_unused: u32, out_stream: *std.Io.Writer) std.Io.Writer.Error!void {
         const size = last_unused - first_unused;
         try out_stream.print("\n/// offset 0x{x}\n", .{size});
         try out_stream.print("_offset{}: [{}]u8,", .{ num, size });
     }
 
-    fn generateCommonName(self: Self, dedupl: *DeduplMap) !struct { []u8, bool } {
+    fn generateCommonName(self: Self, dedupl: *DeduplMap) std.Io.Writer.Error!struct { []u8, bool } {
         const name = self.name.items;
         const description = self.description.items;
 
-        var common_name = ArrayList(u8).init(self.allocator);
+        var common_name: ArrayList(u8) = .empty;
         var has_common_name = false;
 
         // Handle special case for timers
@@ -367,14 +367,14 @@ pub const Peripheral = struct {
         else
             .{ "", false };
         if (has_timer_name) {
-            try common_name.replaceRange(0, common_name.items.len, timer_name);
+            common_name.replaceRange(self.allocator, 0, common_name.items.len, timer_name) catch return std.Io.Writer.Error.WriteFailed;
             has_common_name = true;
         }
 
         const common_prefixes = [_][]const u8{ "USART", "GPIO", "UART", "CAN", "I2C", "SPI" };
         for (common_prefixes) |prefix| {
             if (std.mem.startsWith(u8, name, prefix)) {
-                try common_name.replaceRange(0, common_name.items.len, prefix);
+                common_name.replaceRange(self.allocator, 0, common_name.items.len, prefix) catch return std.Io.Writer.Error.WriteFailed;
                 has_common_name = true;
                 break;
             }
@@ -389,16 +389,17 @@ pub const Peripheral = struct {
         // consciously allow a memory leak. But this is not a problem, as we use
         // ArenaAllocator and the application has a very short lifespan.
         if (dedupl.get(common_name.items)) |v| {
-            try dedupl.put(common_name.items, v + 1);
-            try common_name.appendSlice(try std.fmt.allocPrint(self.allocator, "_{}", .{v + 1}));
+            dedupl.put(common_name.items, v + 1) catch return std.Io.Writer.Error.WriteFailed;
+            const perfixed_name = std.fmt.allocPrint(self.allocator, "_{}", .{v + 1}) catch return std.Io.Writer.Error.WriteFailed;
+            common_name.appendSlice(self.allocator, perfixed_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            try dedupl.put(common_name.items, 1);
+            dedupl.put(common_name.items, 1) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         return .{ common_name.items, has_common_name };
     }
 
-    pub fn write_instance(self: Self, out_stream: anytype, dedupl: *DeduplMap) !void {
+    pub fn write_instance(self: Self, out_stream: *std.Io.Writer, dedupl: *DeduplMap) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             if (std.mem.endsWith(u8, self.name.items, "GeneratorIgnoreMe")) {
                 return;
@@ -420,14 +421,14 @@ pub const Peripheral = struct {
         , .{description});
 
         if (self.derived_peripherals.items.len > 0 or has_common_name) {
-            var periph_name = ArrayList(u8).init(self.allocator);
-            defer periph_name.deinit();
+            var periph_name: ArrayList(u8) = .empty;
+            defer periph_name.deinit(self.allocator);
 
             if (has_common_name) {
-                try periph_name.replaceRange(0, periph_name.items.len, common_name);
+                periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
             } else {
-                try periph_name.replaceRange(0, periph_name.items.len, name);
-                try periph_name.append('x');
+                periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+                periph_name.append(self.allocator, 'x') catch return std.Io.Writer.Error.WriteFailed;
             }
 
             try out_stream.print(
@@ -487,7 +488,7 @@ pub const Peripheral = struct {
         try out_stream.writeAll("\n");
     }
 
-    pub fn write_register(self: Self, out_stream: anytype, dedupl: *DeduplMap) !void {
+    pub fn write_register(self: Self, out_stream: *std.Io.Writer, dedupl: *DeduplMap) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             if (std.mem.endsWith(u8, self.name.items, "GeneratorIgnoreMe")) {
                 return;
@@ -508,12 +509,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name = ArrayList(u8).init(self.allocator);
-        defer periph_name.deinit();
+        var periph_name: ArrayList(u8) = .empty;
+        defer periph_name.deinit(self.allocator);
         if (has_common_name) {
-            try periph_name.replaceRange(0, periph_name.items.len, common_name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            try periph_name.replaceRange(0, periph_name.items.len, name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -564,7 +565,7 @@ pub const Peripheral = struct {
         std.sort.heap(Register, self.registers.items, {}, registersSortCompare);
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        var padded_out_stream = padded_writer.writer();
+        var padded_out_stream = &padded_writer.writer;
 
         var last_uncovered_offset: u32 = 0;
         for (self.registers.items, 0..) |register, i| {
@@ -591,7 +592,7 @@ pub const Peripheral = struct {
         try out_stream.writeAll("\n};\n");
     }
 
-    pub fn write_type(self: Self, out_stream: anytype, dedupl: *DeduplMap) !void {
+    pub fn write_type(self: Self, out_stream: *std.Io.Writer, dedupl: *DeduplMap) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             if (std.mem.endsWith(u8, self.name.items, "GeneratorIgnoreMe")) {
                 return;
@@ -612,12 +613,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name = ArrayList(u8).init(self.allocator);
-        defer periph_name.deinit();
+        var periph_name: ArrayList(u8) = .empty;
+        defer periph_name.deinit(self.allocator);
         if (has_common_name) {
-            try periph_name.replaceRange(0, periph_name.items.len, common_name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            try periph_name.replaceRange(0, periph_name.items.len, name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -636,7 +637,7 @@ pub const Peripheral = struct {
         , .{periph_name.items});
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        const padded_out_stream = padded_writer.writer();
+        const padded_out_stream = &padded_writer.writer;
 
         for (self.registers.items) |register| {
             if (register.alternate_register.items.len > 0) {
@@ -651,7 +652,7 @@ pub const Peripheral = struct {
         try out_stream.writeAll("};\n");
     }
 
-    pub fn write_nullable_type(self: Self, out_stream: anytype, dedupl: *DeduplMap) !void {
+    pub fn write_nullable_type(self: Self, out_stream: *std.Io.Writer, dedupl: *DeduplMap) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             if (std.mem.endsWith(u8, self.name.items, "GeneratorIgnoreMe")) {
                 return;
@@ -672,12 +673,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name = ArrayList(u8).init(self.allocator);
-        defer periph_name.deinit();
+        var periph_name: ArrayList(u8) = .empty;
+        defer periph_name.deinit(self.allocator);
         if (has_common_name) {
-            try periph_name.replaceRange(0, periph_name.items.len, common_name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            try periph_name.replaceRange(0, periph_name.items.len, name);
+            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -699,7 +700,7 @@ pub const Peripheral = struct {
         std.sort.heap(Register, self.registers.items, {}, registersSortCompare);
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        const padded_out_stream = padded_writer.writer();
+        const padded_out_stream = &padded_writer.writer;
 
         for (self.registers.items) |register| {
             if (register.alternate_register.items.len > 0) {
@@ -723,8 +724,8 @@ pub const AddressBlock = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var usage = ArrayList(u8).init(allocator);
-        errdefer usage.deinit();
+        var usage: ArrayList(u8) = .empty;
+        errdefer usage.deinit(allocator);
 
         return Self{
             .offset = null,
@@ -733,8 +734,8 @@ pub const AddressBlock = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
-        self.usage.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.usage.deinit(allocator);
     }
 };
 
@@ -748,10 +749,10 @@ pub const Interrupt = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var description = ArrayList(u8).init(allocator);
-        errdefer description.deinit();
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var description: ArrayList(u8) = .empty;
+        errdefer description.deinit(allocator);
 
         return Self{
             .name = name,
@@ -763,16 +764,16 @@ pub const Interrupt = struct {
     pub fn copy(self: Self, allocator: Allocator) !Self {
         var the_copy = try Self.init(allocator);
 
-        try the_copy.name.append(self.name.items);
-        try the_copy.description.append(self.description.items);
+        try the_copy.name.append(allocator, self.name.items);
+        try the_copy.description.append(allocator, self.description.items);
         the_copy.value = self.value;
 
         return the_copy;
     }
 
-    pub fn deinit(self: *Self) void {
-        self.name.deinit();
-        self.description.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.name.deinit(allocator);
+        self.description.deinit(allocator);
     }
 
     pub fn isValid(self: Self) bool {
@@ -784,7 +785,7 @@ pub const Interrupt = struct {
         return true;
     }
 
-    pub fn format(self: Self, comptime _: []const u8, _: std.fmt.FormatOptions, out_stream: anytype) !void {
+    pub fn format(self: Self, out_stream: *std.Io.Writer) !void {
         try out_stream.writeAll("\n");
         if (!self.isValid()) {
             try out_stream.writeAll("// Not enough info to print interrupt value\n");
@@ -820,19 +821,19 @@ pub const Register = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, periph: []const u8, reset_value: u32, size: u32) !Self {
-        var prefix = ArrayList(u8).init(allocator);
-        errdefer prefix.deinit();
-        try prefix.appendSlice(periph);
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var display_name = ArrayList(u8).init(allocator);
-        errdefer display_name.deinit();
-        var description = ArrayList(u8).init(allocator);
-        errdefer description.deinit();
-        var alternate_register = ArrayList(u8).init(allocator);
-        errdefer alternate_register.deinit();
-        var fields = Fields.init(allocator);
-        errdefer fields.deinit();
+        var prefix: ArrayList(u8) = .empty;
+        errdefer prefix.deinit(allocator);
+        try prefix.appendSlice(allocator, periph);
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var display_name: ArrayList(u8) = .empty;
+        errdefer display_name.deinit(allocator);
+        var description: ArrayList(u8) = .empty;
+        errdefer description.deinit(allocator);
+        var alternate_register: ArrayList(u8) = .empty;
+        errdefer alternate_register.deinit(allocator);
+        var fields: Fields = .empty;
+        errdefer fields.deinit(allocator);
 
         return Self{
             .periph_containing = prefix,
@@ -848,14 +849,14 @@ pub const Register = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
-        self.periph_containing.deinit();
-        self.name.deinit();
-        self.display_name.deinit();
-        self.description.deinit();
-        self.alternate_register.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.periph_containing.deinit(allocator);
+        self.name.deinit(allocator);
+        self.display_name.deinit(allocator);
+        self.description.deinit(allocator);
+        self.alternate_register.deinit(allocator);
 
-        self.fields.deinit();
+        self.fields.deinit(allocator);
     }
 
     pub fn isValid(self: Self) bool {
@@ -888,7 +889,7 @@ pub const Register = struct {
         return @min(next_multiple, last_unused);
     }
 
-    fn writeUnusedField(first_unused: u32, last_unused: u32, reg_reset_value: u32, out_stream: anytype) !void {
+    fn writeUnusedField(first_unused: u32, last_unused: u32, reg_reset_value: u32, out_stream: *std.Io.Writer) !void {
         // Fill unused bits between two fields
         // TODO: right now we have to manually chunk unused bits to 8-bit boundaries as a workaround
         // to this bug https://github.com/ziglang/zig/issues/2627
@@ -913,7 +914,7 @@ pub const Register = struct {
         return @min(next_multiple, last_unused);
     }
 
-    fn writePaddingField(first_unused: u32, last_unused: u32, reg_reset_value: u32, out_stream: anytype) !void {
+    fn writePaddingField(first_unused: u32, last_unused: u32, reg_reset_value: u32, out_stream: *std.Io.Writer) !void {
         const chunk_start = first_unused;
         const chunk_end = alignedEndOfPaddingChunk(chunk_start, last_unused);
         try out_stream.print("\n/// padding [{}:{}]", .{ first_unused, last_unused - 1 });
@@ -924,11 +925,11 @@ pub const Register = struct {
         try out_stream.print("_padding: u{} = {},", .{ chunk_width, unused_value });
     }
 
-    fn generateCommonName(self: Self, periph_name: []const u8) !struct { []u8, bool, bool } {
+    fn generateCommonName(self: Self, periph_name: []const u8) std.Io.Writer.Error!struct { []u8, bool, bool } {
         const name = self.name.items;
 
-        var common_name = ArrayList(u8).init(self.allocator);
-        try common_name.replaceRange(0, common_name.items.len, name);
+        var common_name: ArrayList(u8) = .empty;
+        common_name.replaceRange(self.allocator, 0, common_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
 
         // Handle special case for DMA.
         const is_dma = std.mem.startsWith(u8, periph_name, "DMA");
@@ -939,7 +940,7 @@ pub const Register = struct {
                 if (std.mem.startsWith(u8, name, prefix)) {
                     has_dma_common_register = true;
 
-                    try common_name.replaceRange(prefix.len, name.len - prefix.len, "x");
+                    common_name.replaceRange(self.allocator, prefix.len, name.len - prefix.len, "x") catch return std.Io.Writer.Error.WriteFailed;
 
                     break;
                 }
@@ -957,7 +958,7 @@ pub const Register = struct {
         return .{ common_name.items, false, false };
     }
 
-    pub fn write_register(self: Self, periph_name: []const u8, out_stream: anytype) !void {
+    pub fn write_register(self: Self, periph_name: []const u8, out_stream: *std.Io.Writer) std.Io.Writer.Error!void {
         try out_stream.writeAll("\n");
         if (!self.isValid()) {
             try out_stream.writeAll("// Not enough info to print register value\n");
@@ -974,7 +975,7 @@ pub const Register = struct {
         , .{ description, name, periph_name, common_name, periph_name, common_name });
     }
 
-    pub fn write_type(self: Self, periph_name: []const u8, out_stream: anytype) !void {
+    pub fn write_type(self: Self, periph_name: []const u8, out_stream: *std.Io.Writer) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             try out_stream.writeAll("\n");
             try out_stream.writeAll("// Not enough info to print register value\n");
@@ -997,7 +998,7 @@ pub const Register = struct {
         std.sort.heap(Field, self.fields.items, {}, fieldsSortCompare);
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        var padded_out_stream = padded_writer.writer();
+        var padded_out_stream = &padded_writer.writer;
 
         var last_uncovered_bit: u32 = 0;
         for (self.fields.items) |field| {
@@ -1029,7 +1030,7 @@ pub const Register = struct {
         );
     }
 
-    pub fn write_nullable_type(self: Self, periph_name: []const u8, out_stream: anytype) !void {
+    pub fn write_nullable_type(self: Self, periph_name: []const u8, out_stream: *std.Io.Writer) std.Io.Writer.Error!void {
         if (!self.isValid()) {
             try out_stream.writeAll("\n");
             try out_stream.writeAll("// Not enough info to print register value\n");
@@ -1061,7 +1062,7 @@ pub const Register = struct {
         std.sort.heap(Field, self.fields.items, {}, fieldsSortCompare);
 
         var padded_writer = PaddedWriter.init("    ", out_stream);
-        var padded_out_stream = padded_writer.writer();
+        var padded_out_stream = &padded_writer.writer;
 
         for (self.fields.items) |field| {
             if ((field.bit_offset == null) or (field.bit_width == null)) {
@@ -1103,16 +1104,16 @@ pub const Field = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, periph_containing: []const u8, register_containing: []const u8, register_reset_value: u32) !Self {
-        var periph = ArrayList(u8).init(allocator);
-        try periph.appendSlice(periph_containing);
-        errdefer periph.deinit();
-        var register = ArrayList(u8).init(allocator);
-        try register.appendSlice(register_containing);
-        errdefer register.deinit();
-        var name = ArrayList(u8).init(allocator);
-        errdefer name.deinit();
-        var description = ArrayList(u8).init(allocator);
-        errdefer description.deinit();
+        var periph: ArrayList(u8) = .empty;
+        try periph.appendSlice(allocator, periph_containing);
+        errdefer periph.deinit(allocator);
+        var register: ArrayList(u8) = .empty;
+        try register.appendSlice(allocator, register_containing);
+        errdefer register.deinit(allocator);
+        var name: ArrayList(u8) = .empty;
+        errdefer name.deinit(allocator);
+        var description: ArrayList(u8) = .empty;
+        errdefer description.deinit(allocator);
 
         return Self{
             .periph = periph,
@@ -1128,8 +1129,8 @@ pub const Field = struct {
     pub fn copy(self: Self, allocator: Allocator) !Self {
         var the_copy = try Self.init(allocator, self.periph.items, self.register.items, self.register_reset_value);
 
-        try the_copy.name.appendSlice(self.name.items);
-        try the_copy.description.appendSlice(self.description.items);
+        try the_copy.name.appendSlice(allocator, self.name.items);
+        try the_copy.description.appendSlice(allocator, self.description.items);
         the_copy.bit_offset = self.bit_offset;
         the_copy.bit_width = self.bit_width;
         the_copy.access = self.access;
@@ -1137,11 +1138,11 @@ pub const Field = struct {
         return the_copy;
     }
 
-    pub fn deinit(self: *Self) void {
-        self.periph.deinit();
-        self.register.deinit();
-        self.name.deinit();
-        self.description.deinit();
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        self.periph.deinit(allocator);
+        self.register.deinit(allocator);
+        self.name.deinit(allocator);
+        self.description.deinit(allocator);
     }
 
     pub fn fieldResetValue(bit_start: u32, bit_width: u32, reg_reset_value: u32) u32 {
@@ -1151,7 +1152,7 @@ pub const Field = struct {
         return shifted_reset_value & reset_value_mask;
     }
 
-    pub fn write(self: Self, out_stream: anytype) !void {
+    pub fn write(self: Self, out_stream: *std.Io.Writer) !void {
         try out_stream.writeAll("\n");
         if (self.name.items.len == 0) {
             try out_stream.writeAll("// No name to print field value\n");
@@ -1185,7 +1186,7 @@ pub const Field = struct {
         });
     }
 
-    pub fn write_nullable(self: Self, out_stream: anytype) !void {
+    pub fn write_nullable(self: Self, out_stream: *std.Io.Writer) !void {
         try out_stream.writeAll("\n");
         if (self.name.items.len == 0) {
             try out_stream.writeAll("// No name to print field value\n");
@@ -1218,30 +1219,52 @@ pub const Field = struct {
 };
 
 const PaddedWriter = struct {
-    pub fn init(indent: []const u8, out_writer: anytype) Self {
-        return .{ .indent = indent, .out_writer = out_writer };
-    }
-
     indent: []const u8,
-    out_writer: std.io.AnyWriter,
+    out_writer: *std.io.Writer,
+    writer: std.io.Writer,
     needs_indent: bool = true,
 
-    const Self = @This();
-
-    pub fn writer(self: *Self) std.io.AnyWriter {
-        return .{ .context = self, .writeFn = anyWriterFn };
+    pub fn init(indent: []const u8, out_writer: *std.io.Writer) PaddedWriter {
+        return .{
+            .indent = indent,
+            .out_writer = out_writer,
+            .writer = .{
+                .buffer = &.{},
+                .vtable = &vtable,
+            },
+        };
     }
 
-    pub fn reset(self: *Self) void {
+    pub fn reset(self: *PaddedWriter) void {
         self.needs_indent = true;
     }
 
-    fn anyWriterFn(context: *const anyopaque, buffer: []const u8) anyerror!usize {
-        const self: *Self = @constCast(@alignCast(@ptrCast(context)));
-        return self.writerFn(buffer);
+    const vtable: std.io.Writer.VTable = .{
+        .drain = PaddedWriter.drain,
+        .sendFile = PaddedWriter.sendFile,
+        .flush = std.Io.Writer.noopFlush,
+        .rebase = growingRebase,
+    };
+
+    fn drain(w: *std.io.Writer, data: []const []const u8, _: usize) std.io.Writer.Error!usize {
+        const a: *PaddedWriter = @fieldParentPtr("writer", w);
+
+        var count: usize = 0;
+        for (data) |v| {
+            count += try a.writerFn(v);
+        }
+        return count;
     }
 
-    fn writerFn(self: *Self, buffer: []const u8) anyerror!usize {
+    fn sendFile(_: *std.io.Writer, _: *std.fs.File.Reader, _: std.io.Limit) std.Io.Writer.FileError!usize {
+        return std.Io.Writer.FileError.Unimplemented;
+    }
+
+    fn growingRebase(_: *std.io.Writer, _: usize, _: usize) std.io.Writer.Error!void {
+        return;
+    }
+
+    fn writerFn(self: *PaddedWriter, buffer: []const u8) std.io.Writer.Error!usize {
         var count: usize = 0;
         var new_buffer = buffer;
 
@@ -1287,20 +1310,19 @@ test "Field write" {
         \\RNGEN: u1 = 1,
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
 
-    try field.write(buf_stream);
-    try std.testing.expectEqualStrings(fieldDesiredPrint, output_buffer.items);
+    try field.write(&output_buffer.writer);
+    try std.testing.expectEqualStrings(fieldDesiredPrint, output_buffer.written());
 }
 
 test "Field write nullable" {
@@ -1315,20 +1337,19 @@ test "Field write nullable" {
         \\RNGEN: ?u1 = null,
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
 
-    try field.write_nullable(buf_stream);
-    try std.testing.expectEqualStrings(fieldDesiredPrint, output_buffer.items);
+    try field.write_nullable(&output_buffer.writer);
+    try std.testing.expectEqualStrings(fieldDesiredPrint, output_buffer.written());
 }
 
 test "Register write register" {
@@ -1342,40 +1363,39 @@ test "Register write register" {
         \\RND: RegisterRW(types.PERIPH.RND, nullable_types.PERIPH.RND),
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try register.write_register("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_register("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Register write type" {
@@ -1404,40 +1424,39 @@ test "Register write type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try register.write_type("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_type("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Register write nullable type" {
@@ -1459,40 +1478,39 @@ test "Register write nullable type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try register.write_nullable_type("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_nullable_type("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Register empty write register" {
@@ -1506,19 +1524,18 @@ test "Register empty write register" {
         \\EMPTY: RegisterRW(types.PERIPH.EMPTY, nullable_types.PERIPH.EMPTY),
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("EMPTY");
-    try register.description.appendSlice("EMPTY comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "EMPTY");
+    try register.description.appendSlice(allocator, "EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
-    try register.write_register("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_register("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Register empty write type" {
@@ -1536,19 +1553,18 @@ test "Register empty write type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("EMPTY");
-    try register.description.appendSlice("EMPTY comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "EMPTY");
+    try register.description.appendSlice(allocator, "EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
-    try register.write_type("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_type("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Register empty write nullable type" {
@@ -1563,19 +1579,18 @@ test "Register empty write nullable type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("EMPTY");
-    try register.description.appendSlice("EMPTY comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "EMPTY");
+    try register.description.appendSlice(allocator, "EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
-    try register.write_nullable_type("PERIPH", buf_stream);
-    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.items);
+    try register.write_nullable_type("PERIPH", &output_buffer.writer);
+    try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
 }
 
 test "Peripheral write register" {
@@ -1603,51 +1618,50 @@ test "Peripheral write register" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit();
-    try peripheral.name.appendSlice("PERIPH");
-    try peripheral.description.appendSlice("PERIPH comment");
+    defer peripheral.deinit(allocator);
+    try peripheral.name.appendSlice(allocator, "PERIPH");
+    try peripheral.description.appendSlice(allocator, "PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try peripheral.registers.append(register);
+    try peripheral.registers.append(allocator, register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();
 
-    try peripheral.write_register(buf_stream, &dedupl);
-    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.items);
+    try peripheral.write_register(&output_buffer.writer, &dedupl);
+    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.written());
 }
 
 test "Peripheral write type" {
@@ -1679,51 +1693,50 @@ test "Peripheral write type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit();
-    try peripheral.name.appendSlice("PERIPH");
-    try peripheral.description.appendSlice("PERIPH comment");
+    defer peripheral.deinit(allocator);
+    try peripheral.name.appendSlice(allocator, "PERIPH");
+    try peripheral.description.appendSlice(allocator, "PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try peripheral.registers.append(register);
+    try peripheral.registers.append(allocator, register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();
 
-    try peripheral.write_type(buf_stream, &dedupl);
-    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.items);
+    try peripheral.write_type(&output_buffer.writer, &dedupl);
+    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.written());
 }
 
 test "Peripheral write nullable type" {
@@ -1748,51 +1761,50 @@ test "Peripheral write nullable type" {
         \\
     ;
 
-    var output_buffer = ArrayList(u8).init(allocator);
+    var output_buffer = std.io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
-    const buf_stream = output_buffer.writer().any();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit();
-    try peripheral.name.appendSlice("PERIPH");
-    try peripheral.description.appendSlice("PERIPH comment");
+    defer peripheral.deinit(allocator);
+    try peripheral.name.appendSlice(allocator, "PERIPH");
+    try peripheral.description.appendSlice(allocator, "PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit();
-    try register.name.appendSlice("RND");
-    try register.description.appendSlice("RND comment");
+    defer register.deinit(allocator);
+    try register.name.appendSlice(allocator, "RND");
+    try register.description.appendSlice(allocator, "RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit();
+    defer field.deinit(allocator);
 
-    try field.name.appendSlice("RNGEN");
-    try field.description.appendSlice("RNGEN comment");
+    try field.name.appendSlice(allocator, "RNGEN");
+    try field.description.appendSlice(allocator, "RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit();
+    defer field2.deinit(allocator);
 
-    try field2.name.appendSlice("SEED");
-    try field2.description.appendSlice("SEED comment");
+    try field2.name.appendSlice(allocator, "SEED");
+    try field2.description.appendSlice(allocator, "SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(field);
-    try register.fields.append(field2);
+    try register.fields.append(allocator, field);
+    try register.fields.append(allocator, field2);
 
-    try peripheral.registers.append(register);
+    try peripheral.registers.append(allocator, register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();
 
-    try peripheral.write_nullable_type(buf_stream, &dedupl);
-    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.items);
+    try peripheral.write_nullable_type(&output_buffer.writer, &dedupl);
+    try std.testing.expectEqualStrings(peripheralDesiredPrint, output_buffer.written());
 }
 
 fn bitWidthToMask(width: u32) u32 {

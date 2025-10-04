@@ -29,14 +29,18 @@ pub fn main() !void {
     var slowest = SlowTracker.init(allocator, 5);
     defer slowest.deinit();
 
+    var buffer: [1024]u8 = undefined;
+    const stderr = std.debug.lockStderrWriter(&buffer);
+    defer std.debug.unlockStderrWriter();
+
     var pass: usize = 0;
     var fail: usize = 0;
     var skip: usize = 0;
     var leak: usize = 0;
 
-    const printer = Printer.init();
-    printer.fmt("\r\x1b[0K", .{}); // beginning of line and clear to end of line
-    printer.fmt("{s}\n\n", .{BORDER});
+    const printer = Printer.init(stderr);
+    printer.print("\r\x1b[0K", .{}); // beginning of line and clear to end of line
+    printer.print("{s}\n\n", .{BORDER});
 
     for (builtin.test_functions) |t| {
         var status = Status.pass;
@@ -96,23 +100,23 @@ pub fn main() !void {
     if (leak > 0) {
         printer.status(.fail, "{d} test{s} leaked\n", .{ leak, if (leak != 1) "s" else "" });
     }
-    printer.fmt("\n", .{});
+    printer.print("\n", .{});
     try slowest.display(printer);
-    printer.fmt("\n", .{});
+    printer.print("\n", .{});
     std.posix.exit(if (fail == 0) 0 else 1);
 }
 
 const Printer = struct {
-    out: std.fs.File.Writer,
+    out: *std.io.Writer,
 
-    fn init() Printer {
+    fn init(w: *std.io.Writer) Printer {
         return .{
-            .out = std.io.getStdErr().writer(),
+            .out = w,
         };
     }
 
-    fn fmt(self: Printer, comptime format: []const u8, args: anytype) void {
-        std.fmt.format(self.out, format, args) catch unreachable;
+    fn print(self: Printer, comptime format: []const u8, args: anytype) void {
+        self.out.print(format, args) catch unreachable;
     }
 
     fn status(self: Printer, s: Status, comptime format: []const u8, args: anytype) void {
@@ -124,8 +128,8 @@ const Printer = struct {
         };
         const out = self.out;
         out.writeAll(color) catch @panic("writeAll failed?!");
-        std.fmt.format(out, format, args) catch @panic("std.fmt.format failed?!");
-        self.fmt("\x1b[0m", .{});
+        out.print(format, args) catch @panic("print failed?!");
+        self.print("\x1b[0m", .{});
     }
 };
 
@@ -198,10 +202,10 @@ const SlowTracker = struct {
     fn display(self: *SlowTracker, printer: Printer) !void {
         var slowest = self.slowest;
         const count = slowest.count();
-        printer.fmt("Slowest {d} test{s}: \n", .{ count, if (count != 1) "s" else "" });
+        printer.print("Slowest {d} test{s}: \n", .{ count, if (count != 1) "s" else "" });
         while (slowest.removeMinOrNull()) |info| {
             const ms = @as(f64, @floatFromInt(info.ns)) / 1_000_000.0;
-            printer.fmt("  {d:.2}ms\t{s}\n", .{ ms, info.name });
+            printer.print("  {d:.2}ms\t{s}\n", .{ ms, info.name });
         }
     }
 
