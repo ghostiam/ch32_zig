@@ -206,22 +206,16 @@ fn makeFirmwareSize(step: *std.Build.Step, options: std.Build.Step.MakeOptions) 
 
     const self: *FirmwareSize = @fieldParentPtr("step", step);
 
-    const full_src_path = self.source.getPath2(b, step);
-    const name = std.fs.path.basename(full_src_path);
+    const path = self.source.getPath3(b, step);
 
-    const file = std.fs.openFileAbsolute(full_src_path, .{ .mode = .read_only }) catch |err| {
-        return step.fail("unable to open file from '{s}': {s}", .{
-            full_src_path, @errorName(err),
-        });
-    };
-    const stat = file.stat() catch |err| {
-        return step.fail("unable to stat file from '{s}': {s}", .{
-            full_src_path, @errorName(err),
+    const stat = path.root_dir.handle.statFile(path.subPathOrDot()) catch |err| {
+        return step.fail("unable to stat file from '{f}': {s}", .{
+            path, @errorName(err),
         });
     };
     const size = stat.size;
 
-    std.log.info("{s} size: {d} bytes", .{ name, size });
+    std.log.info("{s} size: {d} bytes", .{ path.basename(), size });
 }
 
 pub fn addMinichlink(b: *std.Build, dep_maybe: ?*std.Build.Dependency, step: *std.Build.Step) void {
