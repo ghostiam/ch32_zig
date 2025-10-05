@@ -1,5 +1,6 @@
 const std = @import("std");
 const chip = @import("src/chip/chip.zig");
+const ObjCopyExternal = @import("ObjCopyExternal.zig");
 
 pub const Target = struct {
     chip: chip.Chip,
@@ -166,7 +167,12 @@ pub fn installFirmware(b: *std.Build, compile: *std.Build.Step.Compile, options:
 
     const path = switch (options.format) {
         .elf => compile.getEmittedBin(),
-        .bin => b.addObjCopy(compile.getEmittedBin(), .{
+        // Due to a bug in Zig ObjCopy 0.15.1, external objcopy will have to be called.
+        // .bin => b.addObjCopy(compile.getEmittedBin(), .{
+        //     .basename = basename,
+        //     .format = .bin,
+        // }).getOutput(),
+        .bin => ObjCopyExternal.create(b, compile.getEmittedBin(), .{
             .basename = basename,
             .format = .bin,
         }).getOutput(),
