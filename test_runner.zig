@@ -12,6 +12,7 @@
 
 const std = @import("std");
 const builtin = @import("builtin");
+const config = @import("config");
 
 const Allocator = std.mem.Allocator;
 
@@ -39,7 +40,7 @@ pub fn main() !void {
 
     const printer = Printer.init(stderr);
     printer.print("\r\x1b[0K", .{}); // beginning of line and clear to end of line
-    printer.print("{s}\n\n", .{BORDER});
+    printer.print("{s}\n\x1b[1m{s}\x1b[0m\n{s}\n\n", .{ BORDER, config.name, BORDER });
 
     for (builtin.test_functions) |t| {
         var status = Status.pass;
