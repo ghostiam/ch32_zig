@@ -82,7 +82,7 @@ pub fn main() !void {
     // Sample time configuration for channels:
     // 000: 3 cycles; 001: 9 cycles.
     // 010: 15 cycles; 011: 30 cycles.
-    // 100: 43 cycles; 101:57 cycles.
+    // 100: 43 cycles; 101: 57 cycles.
     // 110: 73 cycles; 111: 241 cycles.
     const adc_cycles: u4 = 0b111;
     ADC1.SAMPTR2.write(.{
@@ -102,13 +102,13 @@ pub fn main() !void {
     // Reset calibration
     ADC1.CTLR2.modify(.{ .RSTCAL = 1 });
     while (ADC1.CTLR2.read().RSTCAL == 1) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 
     // Start calibration
     ADC1.CTLR2.modify(.{ .CAL = 1 });
     while (ADC1.CTLR2.read().CAL == 1) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 
     _ = try console_writer.write("ADC calibration done\n");

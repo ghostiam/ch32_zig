@@ -2,7 +2,7 @@
     .name = .debug_sdi_print_logger,
     .version = "0.0.0",
     .fingerprint = 0xac5cc5f509253e38,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .ch32 = .{
             // zig fetch --save=ch32 https://github.com/ghostiam/ch32_zig/archive/refs/heads/master.zip

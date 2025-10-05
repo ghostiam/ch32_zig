@@ -2,7 +2,7 @@
     .name = .i2c_bmi160,
     .version = "0.0.0",
     .fingerprint = 0xad9a1ac4277263ce,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .ch32 = .{
             // zig fetch --save=ch32 https://github.com/ghostiam/ch32_zig/archive/refs/heads/master.zip

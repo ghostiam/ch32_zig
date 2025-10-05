@@ -103,6 +103,6 @@ inline fn printRegisters(message: []const u8, retAddr: usize) void {
 inline fn dummyLoop(count: u32) void {
     var i: u32 = 0;
     while (i < count) : (i += 1) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }

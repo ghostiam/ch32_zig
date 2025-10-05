@@ -57,13 +57,13 @@ pub fn main() !void {
     // Reset calibration
     ADC1.CTLR2.modify(.{ .RSTCAL = 1 });
     while (ADC1.CTLR2.read().RSTCAL == 1) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 
     // Start calibration
     ADC1.CTLR2.modify(.{ .CAL = 1 });
     while (ADC1.CTLR2.read().CAL == 1) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 
     _ = try console_writer.write("ADC calibration done\n");
@@ -78,7 +78,7 @@ pub fn main() !void {
 
         // Wait.
         while (ADC1.STATR.read().EOC == 0) {
-            asm volatile ("" ::: "memory");
+            asm volatile ("" ::: .{ .memory = true });
         }
 
         // Result.

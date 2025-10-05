@@ -346,7 +346,7 @@ fn wait(self: UART, conditionFn: fn (self: UART) bool, deadline: time.Deadline) 
         if (deadline.isReached()) {
             return error.Timeout;
         }
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 

@@ -58,7 +58,7 @@ pub const ImuData = packed struct {
     acc_y: i16,
     acc_z: i16,
 
-    pub fn format(self: ImuData, comptime _: []const u8, _: std.fmt.FormatOptions, out_stream: anytype) !void {
+    pub fn format(self: ImuData, out_stream: *std.Io.Writer) !void {
         _ = try out_stream.print("gyro: {d:>5} | {d:>5} | {d:>5} |     accel: {d:>5} | {d:>5} | {d:>5}", .{
             self.gyr_x,
             self.gyr_y,

@@ -344,7 +344,7 @@ fn wait(self: SPI, conditionFn: fn (self: SPI) bool, deadline: time.Deadline) Ti
         if (deadline.isReached()) {
             return error.Timeout;
         }
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 

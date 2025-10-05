@@ -89,7 +89,7 @@ pub const delay = struct {
         const end = PFIC.STK_CNTL.raw +% n;
 
         while (diffTime(PFIC.STK_CNTL.raw, end) < 0) {
-            asm volatile ("" ::: "memory");
+            asm volatile ("" ::: .{ .memory = true });
         }
     }
 
@@ -100,7 +100,7 @@ pub const delay = struct {
         const end = start +% ticks_count;
 
         while (diffTime(PFIC.STK_CNTL.raw, end) < 0) {
-            asm volatile ("" ::: "memory");
+            asm volatile ("" ::: .{ .memory = true });
         }
     }
 

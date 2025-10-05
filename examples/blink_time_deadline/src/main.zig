@@ -25,7 +25,7 @@ pub fn main() !void {
 
         const d = hal.time.Deadline.init(.{ .ms = 1000 });
         while (!d.isReached()) {
-            asm volatile ("" ::: "memory");
+            asm volatile ("" ::: .{ .memory = true });
         }
     }
 }

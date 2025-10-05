@@ -2,7 +2,7 @@
     .name = .blink_delay,
     .version = "0.0.0",
     .fingerprint = 0x9d942a26eedb41dd,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .ch32 = .{
             // zig fetch --save=ch32 https://github.com/ghostiam/ch32_zig/archive/refs/heads/master.zip

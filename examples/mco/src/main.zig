@@ -12,6 +12,6 @@ pub fn main() !void {
     hal.clock.mco(.sys);
 
     while (true) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }

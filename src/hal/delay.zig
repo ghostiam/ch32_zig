@@ -34,7 +34,7 @@ pub fn ticks(n: u32) void {
     const end = PFIC.STK_CNTL.raw +% n;
 
     while (diffTime(PFIC.STK_CNTL.raw, end) < 0) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 
@@ -45,7 +45,7 @@ pub fn us(n: u16) void {
     const end = start +% ticks_count;
 
     while (diffTime(PFIC.STK_CNTL.raw, end) < 0) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 
@@ -56,7 +56,7 @@ pub fn ms(n: u32) void {
     const end = start +% ticks_count;
 
     while (diffTime(PFIC.STK_CNTL.raw, end) < 0) {
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 

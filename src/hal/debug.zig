@@ -32,7 +32,7 @@ pub const sdi_print = struct {
         var timeout: u32 = timeout_iters;
         while (timeout > 0) : (timeout -= 1) {
             // ZIG please don't optimize this loop away.
-            asm volatile ("" ::: "memory");
+            asm volatile ("" ::: .{ .memory = true });
         }
     }
 

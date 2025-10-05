@@ -277,7 +277,7 @@ pub fn slaveAddressMatchingBlocking(self: I2C, deadline: time.Deadline) Error!Di
         if (deadline.isReached()) {
             return error.Timeout;
         }
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 
@@ -306,7 +306,7 @@ pub fn slaveReadVecBlocking(self: I2C, buffers: []const []u8, deadline: time.Dea
                 if (deadline.isReached()) {
                     return error.Timeout;
                 }
-                asm volatile ("" ::: "memory");
+                asm volatile ("" ::: .{ .memory = true });
             }
 
             byte.* = @truncate(self.reg.DATAR.raw);
@@ -350,7 +350,7 @@ pub fn slaveWriteVecBlocking(self: I2C, payloads: []const []const u8, deadline: 
                 if (deadline.isReached()) {
                     return error.Timeout;
                 }
-                asm volatile ("" ::: "memory");
+                asm volatile ("" ::: .{ .memory = true });
             }
 
             self.reg.DATAR.raw = b;
@@ -555,7 +555,7 @@ pub fn getStatus(self: I2C) Status {
     // First read STAR1 and then STAR2.
     const s1 = self.reg.STAR1;
     // Prevent compiler reordering of reads.
-    asm volatile ("" ::: "memory");
+    asm volatile ("" ::: .{ .memory = true });
     const s2 = self.reg.STAR2;
 
     const s1_raw: u16 = @truncate(s1.raw);
@@ -616,7 +616,7 @@ fn waitEventState(self: I2C, event: Event, state: bool, deadline: time.Deadline)
         if (deadline.isReached()) {
             return error.Timeout;
         }
-        asm volatile ("" ::: "memory");
+        asm volatile ("" ::: .{ .memory = true });
     }
 }
 

@@ -84,7 +84,7 @@ pub fn main() !void {
     while (true) {
         try bmi160.readImuData(I2C1, BMI160_I2C_ADDR, &imu_data, .init(timeout));
 
-        std.log.info("{any}", .{imu_data});
+        std.log.info("{f}", .{imu_data});
 
         hal.delay.ms(50);
     }

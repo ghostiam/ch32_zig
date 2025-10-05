@@ -2,7 +2,7 @@
     .name = .i2c_blocking,
     .version = "0.0.0",
     .fingerprint = 0x537250c5f6b6e41c,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .ch32 = .{
             // zig fetch --save=ch32 https://github.com/ghostiam/ch32_zig/archive/refs/heads/master.zip

@@ -2,7 +2,7 @@
     .name = .mco,
     .version = "0.0.0",
     .fingerprint = 0x2c93c5ccf0c6b7aa,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
     .dependencies = .{
         .ch32 = .{
             // zig fetch --save=ch32 https://github.com/ghostiam/ch32_zig/archive/refs/heads/master.zip
