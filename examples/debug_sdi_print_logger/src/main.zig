@@ -29,8 +29,7 @@ pub fn main() !void {
 
     // Enable SDI print for logging.
     hal.debug.sdi_print.init();
-
-    hal.log.setWriter(hal.debug.sdi_print.writer().any());
+    hal.log.setWriter(&hal.debug.sdi_print.writer);
 
     std.log.info("Hello, World!", .{});
 

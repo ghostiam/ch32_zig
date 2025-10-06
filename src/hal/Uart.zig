@@ -370,12 +370,33 @@ fn checkPins(comptime reg: *volatile svd.registers.USART, comptime pins: Pins) v
     );
 }
 
-pub const Writer = std.io.GenericWriter(UART, Timeout, genericWriterFn);
-
-pub fn writer(self: UART) Writer {
-    return .{ .context = self };
+pub fn writer(self: UART, deadline_duration: ?time.Duration) WriterAdapter {
+    return .{
+        .uart = self,
+        .deadline_duration = deadline_duration,
+        .interface = .{
+            .buffer = &.{},
+            .vtable = &.{
+                .drain = WriterAdapter.drain,
+                .flush = std.Io.Writer.noopFlush,
+                .rebase = WriterAdapter.noopRebase,
+            },
+        },
+    };
 }
 
-fn genericWriterFn(self: UART, buffer: []const u8) Timeout!usize {
-    return self.writeBlocking(buffer, time.Deadline.init(.{ .us = 10_000 }));
-}
+pub const WriterAdapter = struct {
+    uart: UART,
+    deadline_duration: ?time.Duration,
+    interface: std.Io.Writer,
+
+    fn drain(w: *std.io.Writer, data: []const []const u8, _: usize) std.io.Writer.Error!usize {
+        const a: *@This() = @alignCast(@fieldParentPtr("interface", w));
+        return a.uart.writeVecBlocking(
+            data,
+            time.Deadline.init(a.deadline_duration),
+        ) catch return std.io.Writer.Error.WriteFailed;
+    }
+
+    fn noopRebase(_: *std.io.Writer, _: usize, _: usize) std.io.Writer.Error!void {}
+};

@@ -84,15 +84,18 @@ pub const sdi_print = struct {
     }
 
     /// Write data and discard any received data.
-    pub inline fn write(payload: []const u8) void {
+    pub inline fn write(payload: []const u8) error{}!usize {
         _ = transfer(payload, null);
+        return payload.len;
     }
 
     /// Write data and discard any received data.
-    pub inline fn writeVec(payloads: []const []const u8) void {
+    pub inline fn writeVec(payloads: []const []const u8) error{}!usize {
+        var total: usize = 0;
         for (payloads) |payload| {
-            write(payload);
+            total += try write(payload);
         }
+        return total;
     }
 
     /// Read input data.
@@ -122,15 +125,25 @@ pub const sdi_print = struct {
         return len;
     }
 
-    const Context = struct {};
-    pub const Writer = std.io.GenericWriter(Context, error{}, genericWriterFn);
+    pub var writer: std.Io.Writer = .{
+        .buffer = &.{},
+        .vtable = &vtable,
+    };
 
-    pub fn writer() Writer {
-        return .{ .context = Context{} };
+    // Implementing std.Io.Writer interface.
+    const vtable: std.Io.Writer.VTable = .{
+        .drain = drain,
+        .flush = std.Io.Writer.noopFlush,
+        .rebase = noopRebase,
+    };
+
+    fn drain(_: *std.Io.Writer, data: []const []const u8, _: usize) std.Io.Writer.Error!usize {
+        var count: usize = 0;
+        for (data) |v| {
+            count += try write(v);
+        }
+        return count;
     }
 
-    pub fn genericWriterFn(_: Context, buffer: []const u8) error{}!usize {
-        write(buffer);
-        return buffer.len;
-    }
+    fn noopRebase(_: *std.io.Writer, _: usize, _: usize) std.io.Writer.Error!void {}
 };

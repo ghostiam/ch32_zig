@@ -26,13 +26,14 @@ pub const interrupts: hal.interrupts.VectorTable = .{
 
 pub fn main() !void {
     const clock = hal.clock.setOrGet(.hsi_max);
+    hal.time.init(clock);
     hal.delay.init(clock);
 
     // Configure UART.
     // The default pins are:
     // For CH32V003: TX: PD5, RX: PD6.
     // For CH32V103, CH32V20x and CH32V30x: TX: PA9, RX: PA10.
-    const USART1 = hal.Uart.init(.USART1, .{
+    var USART1 = hal.Uart.init(.USART1, .{
         // For this example we will use only transmit mode.
         // Default is .tx_rx.
         .mode = .tx,
@@ -48,7 +49,8 @@ pub fn main() !void {
         },
         .baud_rate = 115_200,
     });
-    hal.log.setWriter(USART1.writer().any());
+    var writer = USART1.writer(.{ .ms = 1 });
+    hal.log.setWriter(&writer.interface);
 
     std.log.info("Hello, World!", .{});
 

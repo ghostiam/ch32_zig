@@ -8,9 +8,9 @@ pub fn main() !void {
     hal.delay.init(clock);
 
     hal.debug.sdi_print.init();
-    const console_writer = hal.debug.sdi_print.writer();
+    const console_writer = hal.debug.sdi_print;
     // If you want to use the UART for logging, you can replace SDI print with:
-    // const USART1 = hal.Uart.init(.USART1, .{ .mode = .tx });
+    // var USART1 = hal.Uart.init(.USART1, .{ .mode = .tx });
     // USART1.configureBaudRate(.{
     //     .peripheral_clock = switch (config.chip.series) {
     //         .ch32v003 => clock.hb,
@@ -18,7 +18,8 @@ pub fn main() !void {
     //     },
     //     .baud_rate = 115_200,
     // });
-    // const console_writer = USART1.writer();
+    // var usart1_writer = USART1.writer(.{ .ms = 1 });
+    // const console_writer = &usart1_writer.interface;
 
     // ADC.
     const RCC = svd.peripherals.RCC;

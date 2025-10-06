@@ -1,8 +1,8 @@
 const std = @import("std");
 
-var writer: ?std.io.AnyWriter = null;
+var writer: ?*std.Io.Writer = null;
 
-pub fn setWriter(w: ?std.io.AnyWriter) void {
+pub fn setWriter(w: ?*std.Io.Writer) void {
     comptime {
         const root = @import("root");
         if (!@hasDecl(root, "ch32_options") or root.ch32_options.logFn == nopFn) {

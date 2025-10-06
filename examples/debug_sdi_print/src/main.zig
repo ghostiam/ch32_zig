@@ -12,7 +12,7 @@ pub fn main() !void {
     // Enable SDI print for logging.
     hal.debug.sdi_print.init();
 
-    hal.debug.sdi_print.write("Hello, World!\r\n");
+    _ = try hal.debug.sdi_print.write("Hello, World!\r\n");
 
     // Counter is 32 bits, so we need 10 bytes to store it,
     // because max value is 4294967295.
@@ -21,7 +21,7 @@ pub fn main() !void {
     while (true) {
         counter += 1;
 
-        hal.debug.sdi_print.writeVec(&.{ "Counter: ", intToStr(&buf, counter), "\r\n" });
+        _ = try hal.debug.sdi_print.writeVec(&.{ "Counter: ", intToStr(&buf, counter), "\r\n" });
 
         hal.delay.ms(1000);
     }

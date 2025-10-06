@@ -77,3 +77,7 @@ screen /dev/tty.usbmodem* 115200
 
 `Ctrl + A`, `Ctrl + \` - Exit screen and terminate all programs in this screen. \
 `Ctrl + D`, `D` or `Ctrl + A`, `Ctrl + D` - "minimize" screen and `screen -r` to restore it.
+
+## std.Io.Writer
+
+Using `std.Io.Writer` significantly increases the output file size, try to use `std.Io.Writer` only when necessary.

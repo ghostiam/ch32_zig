@@ -57,7 +57,7 @@ pub fn main() !void {
     // because max value is 4294967295.
     var buf: [10]u8 = undefined;
     var msg_buf: [32]u8 = undefined;
-    var w = std.io.fixedBufferStream(&msg_buf);
+    var w = std.Io.fixedBufferStream(&msg_buf);
     const prefix = "Counter: ";
     const suffix = "\r\n";
 

@@ -47,11 +47,11 @@ pub fn main() !void {
 
     var buf: [spi_recv_expected.len]u8 = undefined;
     while (true) {
-        sdi_print.writeVec(&.{ "SPI send: ", spi_send, "\r\n" });
+        _ = try sdi_print.writeVec(&.{ "SPI send: ", spi_send, "\r\n" });
 
         SPI1.transferBlocking(u8, spi_send, &buf, hal.time.Deadline.init(null)) catch {};
 
-        sdi_print.writeVec(&.{ "SPI recv: ", &buf, "\r\n" });
+        _ = try sdi_print.writeVec(&.{ "SPI recv: ", &buf, "\r\n" });
 
         hal.delay.ms(100);
     }
