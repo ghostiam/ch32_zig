@@ -159,6 +159,12 @@ pub inline fn setPriority(comptime irq: svd.interrupts, priority: u8) void {
     @field(PFIC, "IPRIOR" ++ irq_num_str) = priority & 0b1111_0000;
 }
 
+pub inline fn getPriority(comptime irq: svd.interrupts) u8 {
+    const irq_num = @intFromEnum(irq);
+    const irq_num_str = std.fmt.comptimePrint("{}", .{irq_num});
+    return @field(PFIC, "IPRIOR" ++ irq_num_str);
+}
+
 pub fn unhandled() callconv(call_conv) void {
     switch (builtin.mode) {
         .Debug, .ReleaseSafe => {
