@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CHIP_LIST_URL="https://www.wch-ic.com/api/product_tables/47?page=1&limit=100"
+CHIP_LIST_URL="https://www.wch-ic.com/api/official/website/productTables/getMcuProductTable"
 OUTPUT_FILE="model.zig"
 
 curl $CHIP_LIST_URL -o chip-list.json
@@ -21,7 +21,7 @@ pub const Class = enum {
 pub const Model = enum {
 EOF
 
-cat chip-list.json | jq -r '.data[] | select(.["Part NO."] | startswith("CH32V")) | ["    ", (.["Part NO."] | ascii_downcase), ", // ", .Flash, " / ", .SRAM, " / ", .Freq, " / ", .Package, " (", .GPIO, " GPIO)"] | join("")' >>"$OUTPUT_FILE"
+cat chip-list.json | jq -r '.data[] | select(.id==220) | .value | fromjson | .[] | select(.xh | startswith("CH32V")) | ["    ", (.xh | ascii_downcase), ", // ", .Flash, " / ", .SRAM, " / ", .Freq, " / ", .Package, " (", .GPIO, " GPIO)"] | join("")' | sort -n | uniq >>"$OUTPUT_FILE"
 
 cat <<EOF >>"$OUTPUT_FILE"
 
@@ -32,9 +32,9 @@ EOF
 declare -A model_series
 
 while IFS='|' read -r key value; do
-  key=$(echo "$key" | sed -e 's/ch32v20[0-9]/ch32v20x/g' -e 's/ch32v30[0-9]/ch32v30x/g')
+  key=$(echo "$key" | sed -e 's/ch32v00[0-9]/ch32v003/g' -e 's/ch32v20[0-9]/ch32v20x/g' -e 's/ch32v3[0-9][0-9]/ch32v30x/g')
   model_series["$key"]+=".$value, "
-done < <(cat chip-list.json | jq -r '.data[] | select(.["Part NO."] | startswith("CH32V")) | [(.["url"] | split("/")[-1] | split(".")[0]), "|", .["Part NO."] ] |  join("") | ascii_downcase' | sort)
+done < <(cat chip-list.json | jq -r '.data[] | select(.id==220) | .value | fromjson | .[] | select(.xh | startswith("CH32V")) | [(.["url"] | split("/")[-1] | split(".")[0]), "|", .xh ] |  join("") | ascii_downcase' | sort)
 
 for key in $(printf "%s\n" "${!model_series[@]}" | sort); do
   formatted_value=$(echo "${model_series[$key]}" | sed 's/, $//')
@@ -74,7 +74,7 @@ while read -r key; do
     model_class["d8c"]+=".$key, "
   fi
 
-done < <(cat chip-list.json | jq -r '.data[] | select(.["Part NO."] | startswith("CH32V")) | .["Part NO."] | ascii_downcase' | sort)
+done < <(cat chip-list.json | jq -r '.data[] | select(.id==220) | .value | fromjson | .[] | select(.xh | startswith("CH32V")) | .xh | ascii_downcase' | sort)
 
 for key in $(printf "%s\n" "${!model_class[@]}" | sort); do
   formatted_value=$(echo "${model_class[$key]}" | sed 's/, $//')
@@ -94,7 +94,7 @@ declare -A model_link_script
 
 while IFS='|' read -r key value; do
   model_link_script["$key"]+=".$value, "
-done < <(cat chip-list.json | jq -r '.data[] | select(.["Part NO."] | startswith("CH32V")) | [ .Flash, "_", .SRAM, "|", (.["Part NO."] | ascii_downcase) ] | join("")' | sort)
+done < <(cat chip-list.json | jq -r '.data[] | select(.id==220) | .value | fromjson | .[] | select(.xh | startswith("CH32V")) | [ .Flash, "_", .SRAM, "|", (.xh | ascii_downcase) ] | join("")' | sort)
 
 for key in $(printf "%s\n" "${!model_link_script[@]}" | sort -n -t'|' -k1); do
   formatted_value=$(echo "${model_link_script[$key]}" | sed 's/, $//')

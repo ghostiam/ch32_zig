@@ -11,46 +11,69 @@ pub const Class = enum {
 };
 
 pub const Model = enum {
-    ch32v003j4m6, // 16K / 2K / 48MHz / SOP8 (6 GPIO)
+    ch32v002a4m6, // 16K / 4K / 48MHz / SOP16 (14 GPIO)
+    ch32v002d4u6, // 16K / 4K / 48MHz / QFN12 (11 GPIO)
+    ch32v002f4p6, // 16K / 4K / 48MHz / TSSOP20 (18 GPIO)
+    ch32v002f4u6, // 16K / 4K / 48MHz / QFN20 (18 GPIO)
+    ch32v002j4m6, // 16K / 4K / 48MHz / SOP8 (6 GPIO)
     ch32v003a4m6, // 16K / 2K / 48MHz / SOP16 (14 GPIO)
-    ch32v003f4u6, // 16K / 2K / 48MHz / QFN20 (18 GPIO)
     ch32v003f4p6, // 16K / 2K / 48MHz / TSSOP20 (18 GPIO)
-    ch32v103c8u6, // 64K / 20K / 80MHz / QFN48X7 (37 GPIO)
+    ch32v003f4u6, // 16K / 2K / 48MHz / QFN20 (18 GPIO)
+    ch32v003j4m6, // 16K / 2K / 48MHz / SOP8 (6 GPIO)
+    ch32v004f6p1, // 32K / 6K / 48MHz / TSSOP20 (18 GPIO)
+    ch32v004f6u1, // 32K / 6K / 48MHz / QFN20 (18 GPIO)
+    ch32v005d6u6, // 32K / 6K / 48MHz / QFN12 (11 GPIO)
+    ch32v005e6r6, // 32K / 6K / 48MHz / QSOP24 (22 GPIO)
+    ch32v005f6p6, // 32K / 6K / 48MHz / TSSOP20 (18 GPIO)
+    ch32v005f6u6, // 32K / 6K / 48MHz / QFN20 (18 GPIO)
+    ch32v006e8r6, // 65K / 8K / 48MHz / QSOP24 (22 GPIO)
+    ch32v006f4u6, // 16K / 4K / 48MHz / QFN20 (18 GPIO)
+    ch32v006f8p6, // 65K / 8K / 48MHz / TSSOP20 (18 GPIO)
+    ch32v006f8u6, // 65K / 8K / 48MHz / QFN20 (18 GPIO)
+    ch32v006k8u6, // 65K / 8K / 48MHz / QFN32 (31 GPIO)
+    ch32v007e8r6, // 65K / 8K / 48MHz / QSOP24 (22 GPIO)
+    ch32v007k8u6, // 65K / 8K / 48MHz / QFN32 (31 GPIO)
     ch32v103c6t6, // 32K / 10K / 80MHz / LQFP48 (37 GPIO)
     ch32v103c8t6, // 64K / 20K / 80MHz / LQFP48 (37 GPIO)
+    ch32v103c8u6, // 64K / 20K / 80MHz / QFN48X7 (37 GPIO)
     ch32v103r8t6, // 64K / 20K / 80MHz / LQFP64M (51 GPIO)
-    ch32v203f6p6, // 32K / 10K / 144MHz / TSSOP20 (16 GPIO)
-    ch32v203g6u6, // 32K / 10K / 144MHz / QFN28 (24 GPIO)
-    ch32v203k6t6, // 32K / 10K / 144MHz / LQFP32 (26 GPIO)
     ch32v203c6t6, // 32K / 10K / 144MHz / LQFP48 (37 GPIO)
-    ch32v203f8p6, // 64K / 20K / 144MHz / TSSOP20 (17 GPIO)
-    ch32v203f8u6, // 64K / 20K / 144MHz / QFN20 (19 GPIO)
-    ch32v203g8r6, // 64K / 20K / 144MHz / QSOP28 (24 GPIO)
-    ch32v203k8t6, // 64K / 20K / 144MHz / LQFP32 (26 GPIO)
     ch32v203c8t6, // 64K / 20K / 144MHz / LQFP48 (37 GPIO)
     ch32v203c8u6, // 64K / 20K / 144MHz / QFN48X7 (37 GPIO)
+    ch32v203f6p6, // 32K / 10K / 144MHz / TSSOP20 (16 GPIO)
+    ch32v203f8p6, // 64K / 20K / 144MHz / TSSOP20 (17 GPIO)
+    ch32v203f8u6, // 64K / 20K / 144MHz / QFN20 (19 GPIO)
+    ch32v203g6u6, // 32K / 10K / 144MHz / QFN28 (24 GPIO)
+    ch32v203g8r6, // 64K / 20K / 144MHz / QSOP28 (24 GPIO)
+    ch32v203k8t6, // 64K / 20K / 144MHz / LQFP32 (26 GPIO)
     ch32v203rbt6, // 128K / 64K / 144MHz / LQFP64M (51 GPIO)
+    ch32v205cct6, // 256K / 32K / 192MHz / LQFP48 (41 GPIO)
+    ch32v205rct6, // 256K / 32K / 192MHz / LQFP64 (51 GPIO)
+    ch32v205vct6, // 256K / 32K / 192MHz / LQFP100 (80 GPIO)
+    ch32v208cbu6, // 128K / 64K / 144MHz / QFN48 (37 GPIO)
+    ch32v208gbu6, // 128K / 64K / 144MHz / QFN28 (21 GPIO)
+    ch32v208rbt6, // 128K / 64K / 144MHz / LQFP64M (49 GPIO)
+    ch32v208wbu6, // 128K / 64K / 144MHz / QFN68 (53 GPIO)
     ch32v303cbt6, // 128K / 32K / 144MHz / LQFP48 (37 GPIO)
     ch32v303rbt6, // 128K / 32K / 144MHz / LQFP64M (51 GPIO)
     ch32v303rct6, // 256K / 64K / 144MHz / LQFP64M (51 GPIO)
     ch32v303vct6, // 256K / 64K / 144MHz / LQFP100 (80 GPIO)
+    ch32v305cct6, // 256K / 64K / 144MHz / LQFP48 (41 GPIO)
     ch32v305fbp6, // 128K / 32K / 144MHz / TSSOP20 (17 GPIO)
     ch32v305gbu6, // 128K / 32K / 144MHz / QFN28 (24 GPIO)
     ch32v305rbt6, // 128K / 32K / 144MHz / LQFP64M (51 GPIO)
     ch32v307rct6, // 256K / 64K / 144MHz / LQFP64M (51 GPIO)
-    ch32v307wcu6, // 256K / 64K / 144MHz / QFN68 (54 GPIO)
     ch32v307vct6, // 256K / 64K / 144MHz / LQFP100 (80 GPIO)
-    ch32v208gbu6, // 128K / 64K / 144MHz / QFN28 (21 GPIO)
-    ch32v208cbu6, // 128K / 64K / 144MHz / QFN48 (37 GPIO)
-    ch32v208rbt6, // 128K / 64K / 144MHz / LQFP64M (49 GPIO)
-    ch32v208wbu6, // 128K / 64K / 144MHz / QFN68 (53 GPIO)
+    ch32v307wcu6, // 256K / 64K / 144MHz / QFN68 (54 GPIO)
+    ch32v317vct6, // 256K / 64K / 144MHz / LQFPF100 (70 GPIO)
+    ch32v317wcu6, // 256K / 64K / 144MHz / QFN68 (48 GPIO)
 
     pub fn series(self: Model) Series {
         return switch (self) {
-            .ch32v003a4m6, .ch32v003f4p6, .ch32v003f4u6, .ch32v003j4m6 => .ch32v003,
+            .ch32v002a4m6, .ch32v002d4u6, .ch32v002f4p6, .ch32v002f4u6, .ch32v002j4m6, .ch32v003a4m6, .ch32v003f4p6, .ch32v003f4u6, .ch32v003j4m6, .ch32v004f6p1, .ch32v004f6u1, .ch32v005d6u6, .ch32v005e6r6, .ch32v005f6p6, .ch32v005f6u6, .ch32v006e8r6, .ch32v006f4u6, .ch32v006f8p6, .ch32v006f8u6, .ch32v006k8u6, .ch32v007e8r6, .ch32v007k8u6 => .ch32v003,
             .ch32v103c6t6, .ch32v103c8t6, .ch32v103c8u6, .ch32v103r8t6 => .ch32v103,
-            .ch32v203c6t6, .ch32v203c8t6, .ch32v203c8u6, .ch32v203f6p6, .ch32v203f8p6, .ch32v203f8u6, .ch32v203g6u6, .ch32v203g8r6, .ch32v203k6t6, .ch32v203k8t6, .ch32v203rbt6, .ch32v208cbu6, .ch32v208gbu6, .ch32v208rbt6, .ch32v208wbu6 => .ch32v20x,
-            .ch32v303cbt6, .ch32v303rbt6, .ch32v303rct6, .ch32v303vct6, .ch32v305fbp6, .ch32v305gbu6, .ch32v305rbt6, .ch32v307rct6, .ch32v307vct6, .ch32v307wcu6 => .ch32v30x,
+            .ch32v203c6t6, .ch32v203c8t6, .ch32v203c8u6, .ch32v203f6p6, .ch32v203f8p6, .ch32v203f8u6, .ch32v203g6u6, .ch32v203g8r6, .ch32v203k8t6, .ch32v203rbt6, .ch32v205cct6, .ch32v205rct6, .ch32v205vct6, .ch32v208cbu6, .ch32v208gbu6, .ch32v208rbt6, .ch32v208wbu6 => .ch32v20x,
+            .ch32v303cbt6, .ch32v303rbt6, .ch32v303rct6, .ch32v303vct6, .ch32v305cct6, .ch32v305fbp6, .ch32v305gbu6, .ch32v305rbt6, .ch32v307rct6, .ch32v307vct6, .ch32v307wcu6, .ch32v317vct6, .ch32v317wcu6 => .ch32v30x,
         };
     }
 
@@ -67,11 +90,15 @@ pub const Model = enum {
     pub fn linkScript(self: Model, b: *std.Build) []const u8 {
         const name = switch (self) {
             .ch32v003a4m6, .ch32v003f4p6, .ch32v003f4u6, .ch32v003j4m6 => "ch32v_16K_2K.ld",
-            .ch32v103c6t6, .ch32v203c6t6, .ch32v203f6p6, .ch32v203g6u6, .ch32v203k6t6 => "ch32v_32K_10K.ld",
+            .ch32v002a4m6, .ch32v002d4u6, .ch32v002f4p6, .ch32v002f4u6, .ch32v002j4m6, .ch32v006f4u6 => "ch32v_16K_4K.ld",
+            .ch32v103c6t6, .ch32v203c6t6, .ch32v203f6p6, .ch32v203g6u6 => "ch32v_32K_10K.ld",
+            .ch32v004f6p1, .ch32v004f6u1, .ch32v005d6u6, .ch32v005e6r6, .ch32v005f6p6, .ch32v005f6u6 => "ch32v_32K_6K.ld",
             .ch32v103c8t6, .ch32v103c8u6, .ch32v103r8t6, .ch32v203c8t6, .ch32v203c8u6, .ch32v203f8p6, .ch32v203f8u6, .ch32v203g8r6, .ch32v203k8t6 => "ch32v_64K_20K.ld",
+            .ch32v006e8r6, .ch32v006f8p6, .ch32v006f8u6, .ch32v006k8u6, .ch32v007e8r6, .ch32v007k8u6 => "ch32v_65K_8K.ld",
             .ch32v303cbt6, .ch32v303rbt6, .ch32v305fbp6, .ch32v305gbu6, .ch32v305rbt6 => "ch32v_128K_32K.ld",
             .ch32v203rbt6, .ch32v208cbu6, .ch32v208gbu6, .ch32v208rbt6, .ch32v208wbu6 => "ch32v_128K_64K.ld",
-            .ch32v303rct6, .ch32v303vct6, .ch32v307rct6, .ch32v307vct6, .ch32v307wcu6 => "ch32v_256K_64K.ld",
+            .ch32v205cct6, .ch32v205rct6, .ch32v205vct6 => "ch32v_256K_32K.ld",
+            .ch32v303rct6, .ch32v303vct6, .ch32v305cct6, .ch32v307rct6, .ch32v307vct6, .ch32v307wcu6, .ch32v317vct6, .ch32v317wcu6 => "ch32v_256K_64K.ld",
         };
 
         return b.dupe(name);
