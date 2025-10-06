@@ -15,7 +15,7 @@ https://ziglang.org/download/
 Create a new project:
 
 ```shell
-zig init
+zig init -m
 ```
 
 Import the hal:
@@ -99,15 +99,20 @@ pub fn build(b: *std.Build) void {
 }
 ```
 
-Remove the `src/root.zig` file and replace `src/main.zig` with the following:
+Create a file `src/main.zig` with the following:
 
 ```zig
 const std = @import("std");
 const config = @import("config");
 const hal = @import("hal");
 
+pub const interrupts: hal.interrupts.VectorTable = .{
+    .SysTick = hal.time.sysTickHandler,
+};
+
 pub fn main() !void {
     const clock = hal.clock.setOrGet(.hsi_max);
+    hal.time.init(clock);
     hal.delay.init(clock);
 
     const led = hal.Pin.init(.GPIOC, 0);
