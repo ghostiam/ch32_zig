@@ -107,9 +107,9 @@ pub fn main() !void {
 }
 
 const Printer = struct {
-    out: *std.io.Writer,
+    out: *std.Io.Writer,
 
-    fn init(w: *std.io.Writer) Printer {
+    fn init(w: *std.Io.Writer) Printer {
         return .{
             .out = w,
         };

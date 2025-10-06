@@ -1220,11 +1220,11 @@ pub const Field = struct {
 
 const PaddedWriter = struct {
     indent: []const u8,
-    out_writer: *std.io.Writer,
-    writer: std.io.Writer,
+    out_writer: *std.Io.Writer,
+    writer: std.Io.Writer,
     needs_indent: bool = true,
 
-    pub fn init(indent: []const u8, out_writer: *std.io.Writer) PaddedWriter {
+    pub fn init(indent: []const u8, out_writer: *std.Io.Writer) PaddedWriter {
         return .{
             .indent = indent,
             .out_writer = out_writer,
@@ -1239,14 +1239,13 @@ const PaddedWriter = struct {
         self.needs_indent = true;
     }
 
-    const vtable: std.io.Writer.VTable = .{
+    // Implementing std.Io.Writer interface.
+    const vtable: std.Io.Writer.VTable = .{
         .drain = PaddedWriter.drain,
-        .sendFile = PaddedWriter.sendFile,
         .flush = std.Io.Writer.noopFlush,
-        .rebase = growingRebase,
     };
 
-    fn drain(w: *std.io.Writer, data: []const []const u8, _: usize) std.io.Writer.Error!usize {
+    fn drain(w: *std.Io.Writer, data: []const []const u8, _: usize) std.Io.Writer.Error!usize {
         const a: *PaddedWriter = @fieldParentPtr("writer", w);
 
         var count: usize = 0;
@@ -1256,15 +1255,7 @@ const PaddedWriter = struct {
         return count;
     }
 
-    fn sendFile(_: *std.io.Writer, _: *std.fs.File.Reader, _: std.io.Limit) std.Io.Writer.FileError!usize {
-        return std.Io.Writer.FileError.Unimplemented;
-    }
-
-    fn growingRebase(_: *std.io.Writer, _: usize, _: usize) std.io.Writer.Error!void {
-        return;
-    }
-
-    fn writerFn(self: *PaddedWriter, buffer: []const u8) std.io.Writer.Error!usize {
+    fn writerFn(self: *PaddedWriter, buffer: []const u8) std.Io.Writer.Error!usize {
         var count: usize = 0;
         var new_buffer = buffer;
 
@@ -1310,7 +1301,7 @@ test "Field write" {
         \\RNGEN: u1 = 1,
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
@@ -1337,7 +1328,7 @@ test "Field write nullable" {
         \\RNGEN: ?u1 = null,
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
@@ -1363,7 +1354,7 @@ test "Register write register" {
         \\RND: RegisterRW(types.PERIPH.RND, nullable_types.PERIPH.RND),
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
@@ -1424,7 +1415,7 @@ test "Register write type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
@@ -1478,7 +1469,7 @@ test "Register write nullable type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
@@ -1524,7 +1515,7 @@ test "Register empty write register" {
         \\EMPTY: RegisterRW(types.PERIPH.EMPTY, nullable_types.PERIPH.EMPTY),
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
@@ -1553,7 +1544,7 @@ test "Register empty write type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
@@ -1579,7 +1570,7 @@ test "Register empty write nullable type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
@@ -1618,7 +1609,7 @@ test "Peripheral write register" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
@@ -1693,7 +1684,7 @@ test "Peripheral write type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
@@ -1761,7 +1752,7 @@ test "Peripheral write nullable type" {
         \\
     ;
 
-    var output_buffer = std.io.Writer.Allocating.init(allocator);
+    var output_buffer = std.Io.Writer.Allocating.init(allocator);
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
