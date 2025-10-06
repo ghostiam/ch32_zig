@@ -6,7 +6,7 @@
 
 ### Install Zig
 
-Currently, the examples are tested with `0.14.0`.\
+Currently, the examples are tested with `0.15.1`.\
 Download the latest version from:
 https://ziglang.org/download/
 
