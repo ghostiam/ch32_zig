@@ -9,7 +9,7 @@ minichlink -w zig-out/firmware/blink_minimal_ch32v003.bin flash -b
 
 ## Debugging
 
-### Using minichlink + GDB or CLion
+### Using minichlink with GDB
 
 ```shell
 # Start the GDB server.
@@ -22,31 +22,42 @@ riscv-none-elf-gdb <path_to_elf>
 > target remote 0:3333
 ```
 
-Or in `CLion`: add a new `Remote Debug` configuration.
+### Using minichlink in CLion
 
-![clion_debug_configuration.png](.assets/clion_debug_configuration.png)
-
-### Using OpenOCD in CLion
-
-> \[!NOTE\]
-> If you are using `nix`, you can run `nix develop .\#idea` in the root of the project, and it will automatically
-> configure `CLion` with the `WCH OpenOCD` path.
-
-1. Configure OpenOCD in CLion: Settings -> Build, Execution, Deployment -> Embedded Development -> OpenOCD Location.
-2. In `Run/Debug Configurations`, add a new `OpenOCD Download & Run` configuration.
-3. Create a `Target` (if not created yet) by clicking on the gear icon
+1. In `Run/Debug Configurations`, add a new `Embedded GDB Server` configuration.
+2. Create a `Target` (if not created yet) by clicking on the gear icon
    and [add an empty target](.assets/clion_target_configuration.png) (or configure it properly), then select it in the
    configuration.
-4. Set the `Executable binary` to the path of the `elf` file (e.g.,
-   `zig-out/firmware/template_CH32V003F4P6_no_strip.elf`).
-5. Set the `Debugger` to `Bundled GDB (multiarch)`.
-6. Set the `Board config` to `target/wch-riscv.cfg` (the full path to the `wch-riscv.cfg` file is
-   `<openocd install dir>/share/openocd/scripts/target/wch-riscv.cfg`).
-7. Done.
+3. Set the:
+    - `Executable binary` to the path of the `elf` file (e.g.,
+      `<project_dir>/zig-out/firmware/uart_logger_ch32v003.elf`).
+    - `Debugger` to `Bundled GDB (multiarch)`.
+    - `'target remote' args:` to `tcp:0:3333`.
+    - `GDB Server:` to `<project_dir>/zig-out/bin/minichlink`.
+    - `GDB Server args:` to `-b -G`.
+4. In `Before launch`, remove the `Build` step if you have not properly configured the build step.
+5. Click `Apply` and `OK`.
+6. Done.
 
 My configuration looks like this:
 
-![clion_openocd_configuration.png](.assets/clion_openocd_configuration.png)
+![clion_debug_configuration.png](.assets/clion_debug_configuration.png)
+
+It also allows you to debug peripheral devices:
+
+![debug-peripherals.png](.assets/debug-peripherals.png)
+
+### Fixing the `Memory View` feature in CLion
+
+To make the `Memory View` feature work in CLion, you need to edit a parameter in the IDE:
+[more about the issue](https://youtrack.jetbrains.com/issue/CPP-33250/clion-gdb-memory-view-issue-with-large-number-of-bytes-4096-need-gdb-cmd-logging-esp-see-the-trace-of-gdb-that-clion-uses#focus=Comments-27-7900478.0-0)
+
+Press CTRL+SHIFT+A (CMD+SHIFT+A) -> Registry... \
+Find `cidr.debugger.memory.hex.blockSize` there
+(start typing `blockSize`, and the IDE will automatically filter the fields as you type),
+and set the value to `256` instead of `4096`.
+
+![fix-mem-view.png](.assets/fix-mem-view.png)
 
 ## Show firmware info
 
