@@ -33,7 +33,7 @@
       "*.svd"
       "*/.gitignore"
       "*/LICENSE"
-      "template/chip/*.json"
+      "src/chip/*.json"
     ];
   };
 }

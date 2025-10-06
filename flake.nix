@@ -40,9 +40,10 @@
   };
 
   outputs =
-    inputs@{ nixpkgs
-    , flake-utils
-    , ...
+    inputs@{
+      nixpkgs,
+      flake-utils,
+      ...
     }:
     let
       overlays = [
