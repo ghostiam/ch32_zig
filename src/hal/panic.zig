@@ -1,7 +1,7 @@
 const std = @import("std");
 const config = @import("config");
 
-const zasm = @import("asm.zig");
+const cpu = @import("cpu.zig");
 const interrupts = @import("interrupts.zig");
 const Pin = @import("Pin.zig");
 
@@ -83,7 +83,14 @@ inline fn printRegisters(message: []const u8, retAddr: usize) void {
         \\    MCAUSE: 0x{X:0>8}
         \\    MTVAL: 0x{X:0>8}
         \\    MSCRATCH: 0x{X:0>8}
-    , .{ message, zasm.getMstatus(), zasm.getMepc(), zasm.getMcause(), zasm.getMtval(), zasm.getMscratch() });
+    , .{
+        message,
+        cpu.csr.mstatus.readRaw(),
+        cpu.csr.mepc.readRaw(),
+        cpu.csr.mcause.readRaw(),
+        cpu.csr.mtval.readRaw(),
+        cpu.csr.mscratch.readRaw(),
+    });
 
     // Stack trace
     // Use `riscv-none-elf-addr2line -e zig-out/firmware/ch32v003_blink.elf 0x08000950` ---> main.zig:xxx

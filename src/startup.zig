@@ -2,6 +2,7 @@ const std = @import("std");
 const root = @import("app");
 const config = @import("config");
 const svd = @import("svd");
+const csr = @import("hal").cpu.csr;
 
 pub fn start() callconv(.naked) void {
     // Set global pointer.
@@ -58,42 +59,31 @@ pub fn start() callconv(.naked) void {
         \\copy_done:
     );
 
-    // 3.2 Interrupt-related CSR Registers
-    // INTSYSCR: enable EABI, nesting and HPE.
-    asm volatile ("csrsi 0x804, 0b111");
-
-    // 8.2 RISC-V Standard CSR Registers.
-    if (config.chip.series == .ch32v30x) {
-        // Enable floating point and interrupt.
-        // Set MPIE, MIE and floating point status to Dirty.
-        asm volatile (
-            \\li t0, 0x6088
-            \\csrw mstatus, t0
-        );
-
-        // Microprocessor Configuration Registers (corecfgr)
-        asm volatile (
-            \\li t0, 0x1f
-            \\csrw 0xbc0, t0
-        );
-    } else {
-        // Enable interrupts.
-        // Set MPIE and MIE.
-        asm volatile (
-            \\li t0, 0x88
-            \\csrw mstatus, t0
-        );
+    // Configure the CPU.
+    switch (config.chip.series) {
+        .ch32v003 => csr.intsyscr.write(.{ .hwstken = 1, .inesten = 1, .eabien = 1 }),
+        .ch32v103 => {},
+        .ch32v20x => {
+            // Configure pipelining and instruction prediction.
+            csr.corecfgr.writeRaw(0x1f);
+            // Enable interrupt nesting and hardware stack.
+            csr.intsyscr.write(.{ .hwstken = 1, .inesten = 1, .pmtcfg = 0 });
+        },
+        .ch32v30x => {
+            // Configure pipelining and instruction prediction.
+            csr.corecfgr.writeRaw(0x1f);
+            // Enable interrupt nesting and hardware stack.
+            csr.intsyscr.write(.{ .hwstken = 1, .inesten = 1, .pmtcfg = 0b10 });
+        },
     }
 
-    // mtvec: set the base address of the interrupt vector table
-    // and set the mode0 and mode1.
-    // asm volatile (
-    //     \\la t0, 0x00000000
-    //     \\ori t0, t0, 0b11
-    //     \\csrw mtvec, t0
-    // );
-    // or:
-    asm volatile ("csrsi mtvec, 0b11");
+    // Enable interrupts.
+    csr.mtvec.write(.{ .mode0 = 1, .mode1 = 1, .base = 0 });
+    csr.mstatus.write(.{
+        .mie = 1,
+        .mpie = 1,
+        .fs = if (config.chip.series == .ch32v30x) .dirty else .off,
+    });
 
     // Call systemInit for system initialization.
     @export(&systemInit, .{ .name = "systemInit" });
@@ -101,13 +91,18 @@ pub fn start() callconv(.naked) void {
         \\jal systemInit
     );
 
-    // Set the main function address in MEPC and return from the interrupt.
+    // Load the address of the `callMain` function into the `mepc` register
+    // and transfer control to it using the `mret` instruction.
+    // This is necessary to ensure proper MCU startup after a power-off.
+    // Directly calling the function from an interrupt would prevent the MCU from starting correctly.
     @export(&callMain, .{ .name = "callMain" });
     asm volatile (
         \\la t0, callMain
         \\csrw mepc, t0
-        \\mret
     );
+
+    // Return from the interrupt.
+    asm volatile ("mret");
 }
 
 fn systemInit() callconv(.c) void {
