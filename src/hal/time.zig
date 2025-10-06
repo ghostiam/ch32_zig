@@ -85,6 +85,7 @@ pub const delay = struct {
     pub inline fn init(_: hal.clock.Clocks) void {}
 
     /// Delay in SysTick clock cycles.
+    /// hal.time.init() should be called before use.
     pub inline fn ticks(n: u32) void {
         const end = PFIC.STK_CNTL.raw +% n;
 
@@ -94,6 +95,7 @@ pub const delay = struct {
     }
 
     /// Delay in microseconds. Max value is 65_535.
+    /// hal.time.init() should be called before use.
     pub inline fn us(n: u16) void {
         const start = PFIC.STK_CNTL.raw;
         const ticks_count: u32 = n * @as(u32, @intCast(systicks_per.us));
@@ -105,6 +107,7 @@ pub const delay = struct {
     }
 
     /// Delay in milliseconds.
+    /// hal.time.init() should be called before use.
     pub inline fn ms(n: u32) void {
         const end = millis() +% n;
 
@@ -123,6 +126,9 @@ pub const Duration = union(enum) {
 pub const Deadline = struct {
     deadline: ?Duration,
 
+    /// Initialize a new deadline timer with the specified timeout duration.
+    /// If timeout is null, creates an inactive deadline that will never be reached.
+    /// hal.time.init() should be called before use.
     pub fn init(timeout: ?Duration) Deadline {
         comptime {
             if (!isEnabledInterrupt()) {
@@ -143,6 +149,8 @@ pub const Deadline = struct {
         return .{ .deadline = time };
     }
 
+    /// Returns true if the deadline has been reached, false otherwise.
+    /// If the deadline was initialized with null duration, always returns false.
     pub fn isReached(self: Deadline) bool {
         const time = self.deadline orelse return false;
         const diff = switch (time) {
