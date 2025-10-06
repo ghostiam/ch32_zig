@@ -1,17 +1,17 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 const Allocator = std.mem.Allocator;
 const AutoHashMap = std.AutoHashMap;
-const warn = std.debug.warn;
 
+const String = ArrayList(u8);
 pub const DeduplMap = std.StringHashMap(u32);
 
 /// Top Level
 pub const Device = struct {
-    name: ArrayList(u8),
-    version: ArrayList(u8),
-    description: ArrayList(u8),
+    name: String,
+    version: String,
+    description: String,
     cpu: ?Cpu,
 
     /// Bus Interface Properties
@@ -33,14 +33,14 @@ pub const Device = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var version: ArrayList(u8) = .empty;
-        errdefer version.deinit(allocator);
-        var description: ArrayList(u8) = .empty;
-        errdefer description.deinit(allocator);
-        var peripherals: Peripherals = .empty;
-        errdefer peripherals.deinit(allocator);
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var version: String = .init(allocator);
+        errdefer version.deinit();
+        var description: String = .init(allocator);
+        errdefer description.deinit();
+        var peripherals: Peripherals = .init(allocator);
+        errdefer peripherals.deinit();
         var interrupts = Interrupts.init(allocator);
         errdefer interrupts.deinit();
 
@@ -61,11 +61,11 @@ pub const Device = struct {
         };
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.name.deinit(allocator);
-        self.version.deinit(allocator);
-        self.description.deinit(allocator);
-        self.peripherals.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.name.deinit();
+        self.version.deinit();
+        self.description.deinit();
+        self.peripherals.deinit();
         self.interrupts.deinit();
     }
 
@@ -158,11 +158,11 @@ pub const Device = struct {
         try out_stream.writeAll("};\n");
 
         // now print interrupt table
-        var interrupts_values: ArrayList(u32) = .empty;
-        defer interrupts_values.deinit(self.allocator);
+        var interrupts_values: ArrayList(u32) = .init(self.allocator);
+        defer interrupts_values.deinit();
         var key_iter = self.interrupts.keyIterator();
         while (key_iter.next()) |key| {
-            interrupts_values.append(self.allocator, key.*) catch return std.Io.Writer.Error.WriteFailed;
+            interrupts_values.append(key.*) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         std.mem.sort(u32, interrupts_values.items, {}, std.sort.asc(u32));
@@ -203,9 +203,9 @@ pub const Device = struct {
 };
 
 pub const Cpu = struct {
-    name: ArrayList(u8),
-    revision: ArrayList(u8),
-    endian: ArrayList(u8),
+    name: String,
+    revision: String,
+    endian: String,
     mpu_present: ?bool,
     fpu_present: ?bool,
     nvic_prio_bits: ?u32,
@@ -214,12 +214,12 @@ pub const Cpu = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var revision: ArrayList(u8) = .empty;
-        errdefer revision.deinit(allocator);
-        var endian: ArrayList(u8) = .empty;
-        errdefer endian.deinit(allocator);
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var revision: String = .init(allocator);
+        errdefer revision.deinit();
+        var endian: String = .init(allocator);
+        errdefer endian.deinit();
 
         return Self{
             .name = name,
@@ -232,10 +232,10 @@ pub const Cpu = struct {
         };
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.name.deinit(allocator);
-        self.revision.deinit(allocator);
-        self.endian.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.name.deinit();
+        self.revision.deinit();
+        self.endian.deinit();
     }
 
     pub fn format(self: Self, out_stream: *std.Io.Writer) !void {
@@ -270,10 +270,10 @@ pub const Cpu = struct {
 pub const Peripherals = ArrayList(Peripheral);
 
 pub const Peripheral = struct {
-    name: ArrayList(u8),
-    group_name: ArrayList(u8),
-    description: ArrayList(u8),
-    derived_from: ArrayList(u8),
+    name: String,
+    group_name: String,
+    description: String,
+    derived_from: String,
     derived_peripherals: Peripherals,
     base_address: ?u32,
     address_block: ?AddressBlock,
@@ -284,18 +284,18 @@ pub const Peripheral = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var group_name: ArrayList(u8) = .empty;
-        errdefer group_name.deinit(allocator);
-        var description: ArrayList(u8) = .empty;
-        errdefer description.deinit(allocator);
-        var derived_from: ArrayList(u8) = .empty;
-        errdefer derived_from.deinit(allocator);
-        var derived_peripherals: Peripherals = .empty;
-        errdefer derived_peripherals.deinit(allocator);
-        var registers: Registers = .empty;
-        errdefer registers.deinit(allocator);
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var group_name: String = .init(allocator);
+        errdefer group_name.deinit();
+        var description: String = .init(allocator);
+        errdefer description.deinit();
+        var derived_from: String = .init(allocator);
+        errdefer derived_from.deinit();
+        var derived_peripherals: Peripherals = .init(allocator);
+        errdefer derived_peripherals.deinit();
+        var registers: Registers = .init(allocator);
+        errdefer registers.deinit();
 
         return Self{
             .name = name,
@@ -311,13 +311,13 @@ pub const Peripheral = struct {
         };
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.name.deinit(allocator);
-        self.group_name.deinit(allocator);
-        self.description.deinit(allocator);
-        self.derived_from.deinit(allocator);
-        self.derived_peripherals.deinit(allocator);
-        self.registers.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.name.deinit();
+        self.group_name.deinit();
+        self.description.deinit();
+        self.derived_from.deinit();
+        self.derived_peripherals.deinit();
+        self.registers.deinit();
     }
 
     pub fn isValid(self: Self) bool {
@@ -354,7 +354,7 @@ pub const Peripheral = struct {
         const name = self.name.items;
         const description = self.description.items;
 
-        var common_name: ArrayList(u8) = .empty;
+        var common_name: String = .init(self.allocator);
         var has_common_name = false;
 
         // Handle special case for timers
@@ -367,14 +367,14 @@ pub const Peripheral = struct {
         else
             .{ "", false };
         if (has_timer_name) {
-            common_name.replaceRange(self.allocator, 0, common_name.items.len, timer_name) catch return std.Io.Writer.Error.WriteFailed;
+            common_name.replaceRange(0, common_name.items.len, timer_name) catch return std.Io.Writer.Error.WriteFailed;
             has_common_name = true;
         }
 
         const common_prefixes = [_][]const u8{ "USART", "GPIO", "UART", "CAN", "I2C", "SPI" };
         for (common_prefixes) |prefix| {
             if (std.mem.startsWith(u8, name, prefix)) {
-                common_name.replaceRange(self.allocator, 0, common_name.items.len, prefix) catch return std.Io.Writer.Error.WriteFailed;
+                common_name.replaceRange(0, common_name.items.len, prefix) catch return std.Io.Writer.Error.WriteFailed;
                 has_common_name = true;
                 break;
             }
@@ -391,7 +391,7 @@ pub const Peripheral = struct {
         if (dedupl.get(common_name.items)) |v| {
             dedupl.put(common_name.items, v + 1) catch return std.Io.Writer.Error.WriteFailed;
             const perfixed_name = std.fmt.allocPrint(self.allocator, "_{}", .{v + 1}) catch return std.Io.Writer.Error.WriteFailed;
-            common_name.appendSlice(self.allocator, perfixed_name) catch return std.Io.Writer.Error.WriteFailed;
+            common_name.appendSlice(perfixed_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
             dedupl.put(common_name.items, 1) catch return std.Io.Writer.Error.WriteFailed;
         }
@@ -421,14 +421,14 @@ pub const Peripheral = struct {
         , .{description});
 
         if (self.derived_peripherals.items.len > 0 or has_common_name) {
-            var periph_name: ArrayList(u8) = .empty;
-            defer periph_name.deinit(self.allocator);
+            var periph_name: String = .init(self.allocator);
+            defer periph_name.deinit();
 
             if (has_common_name) {
-                periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
+                periph_name.replaceRange(0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
             } else {
-                periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
-                periph_name.append(self.allocator, 'x') catch return std.Io.Writer.Error.WriteFailed;
+                periph_name.replaceRange(0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+                periph_name.append('x') catch return std.Io.Writer.Error.WriteFailed;
             }
 
             try out_stream.print(
@@ -509,12 +509,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name: ArrayList(u8) = .empty;
-        defer periph_name.deinit(self.allocator);
+        var periph_name: String = .init(self.allocator);
+        defer periph_name.deinit();
         if (has_common_name) {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -613,12 +613,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name: ArrayList(u8) = .empty;
-        defer periph_name.deinit(self.allocator);
+        var periph_name: String = .init(self.allocator);
+        defer periph_name.deinit();
         if (has_common_name) {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -673,12 +673,12 @@ pub const Peripheral = struct {
             \\
         , .{description});
 
-        var periph_name: ArrayList(u8) = .empty;
-        defer periph_name.deinit(self.allocator);
+        var periph_name: String = .init(self.allocator);
+        defer periph_name.deinit();
         if (has_common_name) {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, common_name) catch return std.Io.Writer.Error.WriteFailed;
         } else {
-            periph_name.replaceRange(self.allocator, 0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+            periph_name.replaceRange(0, periph_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
         }
 
         if (has_common_name) {
@@ -719,13 +719,13 @@ pub const Peripheral = struct {
 pub const AddressBlock = struct {
     offset: ?u32,
     size: ?u32,
-    usage: ArrayList(u8),
+    usage: String,
 
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var usage: ArrayList(u8) = .empty;
-        errdefer usage.deinit(allocator);
+        var usage: String = .init(allocator);
+        errdefer usage.deinit();
 
         return Self{
             .offset = null,
@@ -734,25 +734,25 @@ pub const AddressBlock = struct {
         };
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.usage.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.usage.deinit();
     }
 };
 
 pub const Interrupts = AutoHashMap(u32, Interrupt);
 
 pub const Interrupt = struct {
-    name: ArrayList(u8),
-    description: ArrayList(u8),
+    name: String,
+    description: String,
     value: ?u32,
 
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var description: ArrayList(u8) = .empty;
-        errdefer description.deinit(allocator);
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var description: String = .init(allocator);
+        errdefer description.deinit();
 
         return Self{
             .name = name,
@@ -764,16 +764,16 @@ pub const Interrupt = struct {
     pub fn copy(self: Self, allocator: Allocator) !Self {
         var the_copy = try Self.init(allocator);
 
-        try the_copy.name.append(allocator, self.name.items);
-        try the_copy.description.append(allocator, self.description.items);
+        try the_copy.name.append(self.name.items);
+        try the_copy.description.append(self.description.items);
         the_copy.value = self.value;
 
         return the_copy;
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.name.deinit(allocator);
-        self.description.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.name.deinit();
+        self.description.deinit();
     }
 
     pub fn isValid(self: Self) bool {
@@ -804,11 +804,11 @@ pub const Interrupt = struct {
 const Registers = ArrayList(Register);
 
 pub const Register = struct {
-    periph_containing: ArrayList(u8),
-    name: ArrayList(u8),
-    display_name: ArrayList(u8),
-    description: ArrayList(u8),
-    alternate_register: ArrayList(u8),
+    periph_containing: String,
+    name: String,
+    display_name: String,
+    description: String,
+    alternate_register: String,
     address_offset: ?u32,
     size: u32,
     reset_value: u32,
@@ -821,19 +821,19 @@ pub const Register = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, periph: []const u8, reset_value: u32, size: u32) !Self {
-        var prefix: ArrayList(u8) = .empty;
-        errdefer prefix.deinit(allocator);
-        try prefix.appendSlice(allocator, periph);
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var display_name: ArrayList(u8) = .empty;
-        errdefer display_name.deinit(allocator);
-        var description: ArrayList(u8) = .empty;
-        errdefer description.deinit(allocator);
-        var alternate_register: ArrayList(u8) = .empty;
-        errdefer alternate_register.deinit(allocator);
-        var fields: Fields = .empty;
-        errdefer fields.deinit(allocator);
+        var prefix: String = .init(allocator);
+        errdefer prefix.deinit();
+        try prefix.appendSlice(periph);
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var display_name: String = .init(allocator);
+        errdefer display_name.deinit();
+        var description: String = .init(allocator);
+        errdefer description.deinit();
+        var alternate_register: String = .init(allocator);
+        errdefer alternate_register.deinit();
+        var fields: Fields = .init(allocator);
+        errdefer fields.deinit();
 
         return Self{
             .periph_containing = prefix,
@@ -849,14 +849,14 @@ pub const Register = struct {
         };
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.periph_containing.deinit(allocator);
-        self.name.deinit(allocator);
-        self.display_name.deinit(allocator);
-        self.description.deinit(allocator);
-        self.alternate_register.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.periph_containing.deinit();
+        self.name.deinit();
+        self.display_name.deinit();
+        self.description.deinit();
+        self.alternate_register.deinit();
 
-        self.fields.deinit(allocator);
+        self.fields.deinit();
     }
 
     pub fn isValid(self: Self) bool {
@@ -928,8 +928,8 @@ pub const Register = struct {
     fn generateCommonName(self: Self, periph_name: []const u8) std.Io.Writer.Error!struct { []u8, bool, bool } {
         const name = self.name.items;
 
-        var common_name: ArrayList(u8) = .empty;
-        common_name.replaceRange(self.allocator, 0, common_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
+        var common_name: String = .init(self.allocator);
+        common_name.replaceRange(0, common_name.items.len, name) catch return std.Io.Writer.Error.WriteFailed;
 
         // Handle special case for DMA.
         const is_dma = std.mem.startsWith(u8, periph_name, "DMA");
@@ -940,7 +940,7 @@ pub const Register = struct {
                 if (std.mem.startsWith(u8, name, prefix)) {
                     has_dma_common_register = true;
 
-                    common_name.replaceRange(self.allocator, prefix.len, name.len - prefix.len, "x") catch return std.Io.Writer.Error.WriteFailed;
+                    common_name.replaceRange(prefix.len, name.len - prefix.len, "x") catch return std.Io.Writer.Error.WriteFailed;
 
                     break;
                 }
@@ -1091,11 +1091,11 @@ pub const Access = enum {
 pub const Fields = ArrayList(Field);
 
 pub const Field = struct {
-    periph: ArrayList(u8),
-    register: ArrayList(u8),
+    periph: String,
+    register: String,
     register_reset_value: u32,
-    name: ArrayList(u8),
-    description: ArrayList(u8),
+    name: String,
+    description: String,
     bit_offset: ?u32,
     bit_width: ?u32,
 
@@ -1104,16 +1104,16 @@ pub const Field = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator, periph_containing: []const u8, register_containing: []const u8, register_reset_value: u32) !Self {
-        var periph: ArrayList(u8) = .empty;
-        try periph.appendSlice(allocator, periph_containing);
-        errdefer periph.deinit(allocator);
-        var register: ArrayList(u8) = .empty;
-        try register.appendSlice(allocator, register_containing);
-        errdefer register.deinit(allocator);
-        var name: ArrayList(u8) = .empty;
-        errdefer name.deinit(allocator);
-        var description: ArrayList(u8) = .empty;
-        errdefer description.deinit(allocator);
+        var periph: String = .init(allocator);
+        try periph.appendSlice(periph_containing);
+        errdefer periph.deinit();
+        var register: String = .init(allocator);
+        try register.appendSlice(register_containing);
+        errdefer register.deinit();
+        var name: String = .init(allocator);
+        errdefer name.deinit();
+        var description: String = .init(allocator);
+        errdefer description.deinit();
 
         return Self{
             .periph = periph,
@@ -1129,8 +1129,8 @@ pub const Field = struct {
     pub fn copy(self: Self, allocator: Allocator) !Self {
         var the_copy = try Self.init(allocator, self.periph.items, self.register.items, self.register_reset_value);
 
-        try the_copy.name.appendSlice(allocator, self.name.items);
-        try the_copy.description.appendSlice(allocator, self.description.items);
+        try the_copy.name.appendSlice(self.name.items);
+        try the_copy.description.appendSlice(self.description.items);
         the_copy.bit_offset = self.bit_offset;
         the_copy.bit_width = self.bit_width;
         the_copy.access = self.access;
@@ -1138,11 +1138,11 @@ pub const Field = struct {
         return the_copy;
     }
 
-    pub fn deinit(self: *Self, allocator: Allocator) void {
-        self.periph.deinit(allocator);
-        self.register.deinit(allocator);
-        self.name.deinit(allocator);
-        self.description.deinit(allocator);
+    pub fn deinit(self: *Self) void {
+        self.periph.deinit();
+        self.register.deinit();
+        self.name.deinit();
+        self.description.deinit();
     }
 
     pub fn fieldResetValue(bit_start: u32, bit_width: u32, reg_reset_value: u32) u32 {
@@ -1305,10 +1305,10 @@ test "Field write" {
     defer output_buffer.deinit();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
 
@@ -1332,10 +1332,10 @@ test "Field write nullable" {
     defer output_buffer.deinit();
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
 
@@ -1358,32 +1358,32 @@ test "Register write register" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
     try register.write_register("PERIPH", &output_buffer.writer);
     try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
@@ -1419,32 +1419,32 @@ test "Register write type" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
     try register.write_type("PERIPH", &output_buffer.writer);
     try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
@@ -1473,32 +1473,32 @@ test "Register write nullable type" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadWrite; // write field will exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
     try register.write_nullable_type("PERIPH", &output_buffer.writer);
     try std.testing.expectEqualStrings(registerDesiredPrint, output_buffer.written());
@@ -1519,9 +1519,9 @@ test "Register empty write register" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "EMPTY");
-    try register.description.appendSlice(allocator, "EMPTY comment");
+    defer register.deinit();
+    try register.name.appendSlice("EMPTY");
+    try register.description.appendSlice("EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
@@ -1548,9 +1548,9 @@ test "Register empty write type" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "EMPTY");
-    try register.description.appendSlice(allocator, "EMPTY comment");
+    defer register.deinit();
+    try register.name.appendSlice("EMPTY");
+    try register.description.appendSlice("EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
@@ -1574,9 +1574,9 @@ test "Register empty write nullable type" {
     defer output_buffer.deinit();
 
     var register = try Register.init(allocator, "PERIPH", 0, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "EMPTY");
-    try register.description.appendSlice(allocator, "EMPTY comment");
+    defer register.deinit();
+    try register.name.appendSlice("EMPTY");
+    try register.description.appendSlice("EMPTY comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
@@ -1613,40 +1613,40 @@ test "Peripheral write register" {
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit(allocator);
-    try peripheral.name.appendSlice(allocator, "PERIPH");
-    try peripheral.description.appendSlice(allocator, "PERIPH comment");
+    defer peripheral.deinit();
+    try peripheral.name.appendSlice("PERIPH");
+    try peripheral.description.appendSlice("PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
-    try peripheral.registers.append(allocator, register);
+    try peripheral.registers.append(register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();
@@ -1688,40 +1688,40 @@ test "Peripheral write type" {
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit(allocator);
-    try peripheral.name.appendSlice(allocator, "PERIPH");
-    try peripheral.description.appendSlice(allocator, "PERIPH comment");
+    defer peripheral.deinit();
+    try peripheral.name.appendSlice("PERIPH");
+    try peripheral.description.appendSlice("PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
-    try peripheral.registers.append(allocator, register);
+    try peripheral.registers.append(register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();
@@ -1756,40 +1756,40 @@ test "Peripheral write nullable type" {
     defer output_buffer.deinit();
 
     var peripheral = try Peripheral.init(allocator);
-    defer peripheral.deinit(allocator);
-    try peripheral.name.appendSlice(allocator, "PERIPH");
-    try peripheral.description.appendSlice(allocator, "PERIPH comment");
+    defer peripheral.deinit();
+    try peripheral.name.appendSlice("PERIPH");
+    try peripheral.description.appendSlice("PERIPH comment");
     peripheral.base_address = 0x24000;
 
     var register = try Register.init(allocator, "PERIPH", 0b101, 0x20);
-    defer register.deinit(allocator);
-    try register.name.appendSlice(allocator, "RND");
-    try register.description.appendSlice(allocator, "RND comment");
+    defer register.deinit();
+    try register.name.appendSlice("RND");
+    try register.description.appendSlice("RND comment");
     register.address_offset = 0x100;
     register.size = 0x20;
 
     var field = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field.deinit(allocator);
+    defer field.deinit();
 
-    try field.name.appendSlice(allocator, "RNGEN");
-    try field.description.appendSlice(allocator, "RNGEN comment");
+    try field.name.appendSlice("RNGEN");
+    try field.description.appendSlice("RNGEN comment");
     field.bit_offset = 2;
     field.bit_width = 1;
     field.access = .ReadOnly; // since only register, write field will not exist
 
     var field2 = try Field.init(allocator, "PERIPH", "RND", 0b101);
-    defer field2.deinit(allocator);
+    defer field2.deinit();
 
-    try field2.name.appendSlice(allocator, "SEED");
-    try field2.description.appendSlice(allocator, "SEED comment");
+    try field2.name.appendSlice("SEED");
+    try field2.description.appendSlice("SEED comment");
     field2.bit_offset = 10;
     field2.bit_width = 3;
     field2.access = .ReadWrite;
 
-    try register.fields.append(allocator, field);
-    try register.fields.append(allocator, field2);
+    try register.fields.append(field);
+    try register.fields.append(field2);
 
-    try peripheral.registers.append(allocator, register);
+    try peripheral.registers.append(register);
 
     var dedupl = DeduplMap.init(allocator);
     defer dedupl.deinit();

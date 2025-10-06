@@ -25,7 +25,7 @@ pub fn addFirmwareTest(app_builder: *std.Build, dep_maybe: ?*std.Build.Dependenc
 
     const firmware = ch32_builder.addTest(.{
         .name = options.name,
-        .root_module = root_mod.import_table.get("app").?,
+        .root_module = root_mod.import_table.get("app") orelse @panic("module 'app' not found in import table"),
         .test_runner = .{ .path = ch32_builder.path("test_runner.zig"), .mode = .simple },
     });
 
