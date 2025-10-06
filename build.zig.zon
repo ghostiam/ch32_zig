@@ -13,10 +13,10 @@
         "LICENSE",
     },
     .dependencies = .{
-        // zig fetch --save=minichlink https://github.com/ghostiam/minichlink-ocd/archive/e9a3d0079ea401714ab2f190104c4d754076af80.zip
+        // zig fetch --save=minichlink https://github.com/ghostiam/minichlink-ocd/archive/5c0ae0bd9105bb2a8a6d9b3a663940114c9c51b2.zip
         .minichlink = .{
-            .url = "https://github.com/ghostiam/minichlink-ocd/archive/e9a3d0079ea401714ab2f190104c4d754076af80.zip",
-            .hash = "minichlink-1.0.0-dev-733af6-Yu_TMBxAAAAU5tS7fNk-LkNbOe1Kpg1awmBqns2D1Gsx",
+            .url = "https://github.com/ghostiam/minichlink-ocd/archive/5c0ae0bd9105bb2a8a6d9b3a663940114c9c51b2.zip",
+            .hash = "minichlink-1.0.0-dev-7e6e46-Yu_TMFpAAABWHNIXE5gAB1nP4_YbAgCeRKOSYza21JPv",
         },
         .@"tools/svd4zig" = .{ .path = "tools/svd4zig" },
     },
