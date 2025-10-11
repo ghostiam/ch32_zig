@@ -11,12 +11,12 @@ pub fn start() callconv(.naked) void {
         \\.option norelax
         \\la gp, __global_pointer$
         \\.option pop
-    );
+        ::: .{ .memory = true, .x3 = true });
 
     // Set stack pointer.
     asm volatile (
         \\la sp, __end_of_stack
-    );
+        ::: .{ .memory = true, .x2 = true });
 
     // Clear whole RAM. Good for debugging.
     asm volatile (
@@ -29,7 +29,7 @@ pub fn start() callconv(.naked) void {
         \\    addi a1, a1, 4
         \\    blt a1, a2, clear_ram_loop
         \\clear_ram_done:
-    );
+        ::: .{ .memory = true, .x10 = true, .x11 = true, .x12 = true });
 
     // // Clear .bss section.
     // asm volatile (
@@ -42,7 +42,7 @@ pub fn start() callconv(.naked) void {
     //     \\    addi a1, a1, 4
     //     \\    blt a1, a2, clear_bss_loop
     //     \\clear_bss_done:
-    // );
+    //     ::: .{ .memory = true, .x10 = true, .x11 = true, .x12 = true });
 
     // Copy .data from flash to RAM.
     asm volatile (
@@ -57,7 +57,7 @@ pub fn start() callconv(.naked) void {
         \\    addi a1, a1, 4
         \\    bne a1, a2, copy_data_loop
         \\copy_done:
-    );
+        ::: .{ .memory = true, .x10 = true, .x11 = true, .x12 = true, .x13 = true });
 
     // Configure the CPU.
     switch (config.chip.series) {
@@ -97,9 +97,9 @@ pub fn start() callconv(.naked) void {
     // Directly calling the function from an interrupt would prevent the MCU from starting correctly.
     @export(&callMain, .{ .name = "callMain" });
     asm volatile (
-        \\la t0, callMain
-        \\csrw mepc, t0
-    );
+        \\la a0, callMain
+        \\csrw mepc, a0
+        ::: .{ .memory = true, .x10 = true });
 
     // Return from the interrupt.
     asm volatile ("mret");
