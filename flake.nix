@@ -149,6 +149,8 @@
                 export PROJECT_ROOT="$FLAKE_ROOT"
               ''
               + pkgs.lib.optionalAttrs pkgs.stdenv.isDarwin ''
+                #
+                export NIX_CFLAGS_COMPILE=$(echo $NIX_CFLAGS_COMPILE | sed 's/-fmacro-prefix-map=[^ ]*//g')
                 export NIX_CFLAGS_COMPILE="-iframework $SDKROOT/System/Library/Frameworks -isystem $SDKROOT/usr/include $NIX_CFLAGS_COMPILE"
                 export NIX_LDFLAGS="-L$SDKROOT/usr/lib $NIX_LDFLAGS"
               '';
