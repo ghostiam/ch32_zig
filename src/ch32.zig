@@ -58,7 +58,7 @@ pub const std_options: std.Options = .{
     .fmt_max_depth = ch32_options.fmt_max_depth,
 };
 
-const defaultPanic = if (ch32_options.logFn == hal.log.nopFn) hal.panic.initSilent(ch32_options.panic_options) else hal.panic.initLog(ch32_options.panic_options);
+const defaultPanic = if (ch32_options.logFn == hal.log.nopFn) hal.panic.InitSilent(ch32_options.panic_options) else hal.panic.InitLog(ch32_options.panic_options);
 pub const panic = if (@hasDecl(app, "panic")) app.panic else defaultPanic;
 
 pub const interrupts: hal.interrupts.VectorTable = if (@hasDecl(app, "interrupts")) app.interrupts else .{};
