@@ -16,6 +16,9 @@ pub const FirmwareOptions = struct {
     /// Override the default config options.
     /// Use `createConfigOptions(b, name, target.chip)` for default and add options to it.
     config_options: ?*std.Build.Step.Options = null,
+    /// If set to false, allows to get a stack trace on panic with `ReleaseSmall` optimization
+    /// at the cost of increased output binary size.
+    omit_frame_pointer: ?bool = null,
 };
 
 pub fn addFirmwareTest(app_builder: *std.Build, dep_maybe: ?*std.Build.Dependency, native_target: std.Build.ResolvedTarget, options: FirmwareOptions) *std.Build.Step.Compile {
@@ -71,6 +74,7 @@ pub fn createModules(b: *std.Build, target: std.Build.ResolvedTarget, options: F
         .root_source_file = options.root_source_file,
         .target = target,
         .optimize = options.optimize,
+        .omit_frame_pointer = options.omit_frame_pointer,
         .single_threaded = true,
         .imports = &.{
             .{ .name = "config", .module = config_mod },
@@ -83,6 +87,7 @@ pub fn createModules(b: *std.Build, target: std.Build.ResolvedTarget, options: F
         .root_source_file = b.path("src/ch32.zig"),
         .target = target,
         .optimize = options.optimize,
+        .omit_frame_pointer = options.omit_frame_pointer,
         .single_threaded = true,
         .imports = &.{
             .{ .name = "config", .module = config_mod },
