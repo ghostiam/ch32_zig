@@ -148,7 +148,9 @@ fn make(step: *Step, options: Step.MakeOptions) !void {
     const objcopy: *ObjCopyExternal = @fieldParentPtr("step", step);
     try step.singleUnchangingWatchInput(objcopy.input_file);
 
-    const objcopy_exe = try b.findProgram(&.{ "objcopy", "llvm-objcopy" }, &.{});
+    const objcopy_exe = b.findProgram(&.{ "objcopy", "llvm-objcopy" }, &.{}) catch {
+        return error.ObjCopyNotFoundInPath;
+    };
 
     var man = b.graph.cache.obtain();
     defer man.deinit();
