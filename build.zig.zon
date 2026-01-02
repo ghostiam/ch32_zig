@@ -6,6 +6,7 @@
     .paths = .{
         "build.zig",
         "build.zig.zon",
+        "ObjCopyExternal.zig",
         "test_runner.zig",
         "src",
         "tools",
